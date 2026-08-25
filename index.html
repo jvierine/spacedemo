@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interactive demonstrations of spacecraft orbits and perturbations." />
+    <title>Spacecraft Orbits · Demonstrations</title>
+    <link rel="stylesheet" href="./styles.css?v=20260825-1" />
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, chtml: { scale: 1 }, options: { enableMenu: false } };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  </head>
+  <body class="landing">
+    <header class="site-header">
+      <a class="course-title" href="/space/">
+        <span>Spacecraft Orbits</span>
+        <small>Juha Vierinen</small>
+      </a>
+      <nav class="top-actions" aria-label="Course links">
+        <a class="top-link" href="/space/" aria-current="page">Index</a>
+        <a class="top-link" href="https://github.com/jvierine/spacedemo" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+    <main class="landing-main">
+      <p class="eyebrow">FYS-3000 · Celestial mechanics</p>
+      <h1>Orbit demonstrations</h1>
+      <p class="intro">Move the parameters and see the geometry respond. Every view is three-dimensional: drag to rotate, right-drag to pan, and scroll to zoom.</p>
+      <section class="demo-grid" aria-label="Available demonstrations">
+        <a class="demo-card" href="./kepler/">
+          <span class="demo-number">01</span>
+          <div class="card-orbit orbit-one" aria-hidden="true"></div>
+          <h2>Keplerian orbits</h2>
+          <p>Explore the six orbital elements and the geometry of an ellipse.</p>
+          <div class="formula">\(r=\frac{a(1-e^2)}{1+e\cos\nu}\)</div>
+          <span class="open-label">Open →</span>
+        </a>
+        <a class="demo-card" href="./drag/">
+          <span class="demo-number">02</span>
+          <div class="card-orbit orbit-two" aria-hidden="true"></div>
+          <h2>Atmospheric drag</h2>
+          <p>Connect density and spacecraft properties to orbital decay.</p>
+          <div class="formula">\(F_D=\tfrac12\rho C_D A v^2\)</div>
+          <span class="open-label">Open →</span>
+        </a>
+        <a class="demo-card" href="./j2/">
+          <span class="demo-number">03</span>
+          <div class="card-orbit orbit-three" aria-hidden="true"></div>
+          <h2>J₂ perturbations</h2>
+          <p>Watch nodal regression and apsidal precession accumulate.</p>
+          <div class="formula">\(\dot\Omega=-\tfrac32 J_2 n (R_E/p)^2\cos i\)</div>
+          <span class="open-label">Open →</span>
+        </a>
+        <a class="demo-card" href="./staging/">
+          <span class="demo-number">04</span>
+          <div class="card-rocket" aria-hidden="true"><i></i><i></i><i></i></div>
+          <h2>Rocket staging</h2>
+          <p>Build a launch vehicle and close the final-stage Δv budget.</p>
+          <div class="formula">\(\Delta v=I_{sp}g_0\ln(m_0/m_f)\)</div>
+          <span class="open-label">Open →</span>
+        </a>
+        <a class="demo-card" href="./dzhanibekov/">
+          <span class="demo-number">05</span>
+          <div class="card-body" aria-hidden="true"></div>
+          <h2>Dzhanibekov effect</h2>
+          <p>Tumble a rigid body about its unstable intermediate axis.</p>
+          <div class="formula">\(I\dot{\boldsymbol\omega}+\boldsymbol\omega\times I\boldsymbol\omega=0\)</div>
+          <span class="open-label">Open →</span>
+        </a>
+      </section>
+    </main>
+    <footer class="site-footer">© Juha Vierinen, 2026</footer>
+  </body>
+</html>
