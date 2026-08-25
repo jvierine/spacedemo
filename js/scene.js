@@ -140,7 +140,7 @@ export function planeVector(lengthKm, angle, elements) {
   return perifocalToInertial([lengthKm * Math.cos(angle), lengthKm * Math.sin(angle), 0], elements.i, elements.raan, elements.argp);
 }
 
-export function attachLabel(container, camera, object, text, className = '') {
+export function attachLabel(container, camera, object, text, className = '', offset = [0, 0]) {
   const element = document.createElement('span');
   element.className = `label ${className}`;
   element.textContent = text;
@@ -154,8 +154,8 @@ export function attachLabel(container, camera, object, text, className = '') {
       projected.project(camera);
       const visible = projected.z > -1 && projected.z < 1;
       element.hidden = !visible;
-      element.style.left = `${(projected.x * .5 + .5) * container.clientWidth}px`;
-      element.style.top = `${(-projected.y * .5 + .5) * container.clientHeight}px`;
+      element.style.left = `${(projected.x * .5 + .5) * container.clientWidth + offset[0]}px`;
+      element.style.top = `${(-projected.y * .5 + .5) * container.clientHeight + offset[1]}px`;
     }
   };
 }

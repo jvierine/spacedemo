@@ -1,5 +1,5 @@
 import { EARTH_RADIUS_KM, ellipseGeometry, periodSeconds, positionAtTrue, radians, sampleOrbit, trueFromMean } from '../js/orbit.js';
-import { attachLabel, createSpaceScene, makeDot, makeLine, makePoint, replaceLine, scaled, setPosition, sliderBindings } from '../js/scene.js';
+import { attachLabel, createSpaceScene, makeDot, makeLine, replaceLine, scaled, setPosition, sliderBindings } from '../js/scene.js';
 
 const viewport = document.querySelector('#viewport');
 const view = createSpaceScene(viewport);
@@ -8,7 +8,7 @@ const major = makeLine([], 0x8bd99d, .75, true); view.scene.add(major);
 const minor = makeLine([], 0x8bd99d, .45, true); view.scene.add(minor);
 const nodes = makeLine([], 0x54d6dd, .7, true); view.scene.add(nodes);
 const inclinationArc = makeLine([],0x54d6dd,1);view.scene.add(inclinationArc);
-const craft = makePoint(0xffffff, .11); view.scene.add(craft);
+const craft = makeDot(0xffffff, .075); view.scene.add(craft);
 const peri = makeDot(0xff766d, .026); view.scene.add(peri);
 const apo = makeDot(0x54d6dd, .026); view.scene.add(apo);
 const centre = makeDot(0x8bd99d, .018); view.scene.add(centre);
@@ -16,10 +16,18 @@ const aAnchor = makeDot(0x8bd99d, .001), bAnchor = makeDot(0x8bd99d, .001); view
 const northPole = makeDot(0xffffff, .022); northPole.position.set(0,0,1.055); view.scene.add(northPole);
 const axisAnchor=makeDot(0xffffff,.001);axisAnchor.position.set(0,0,1.46);view.scene.add(axisAnchor);
 const inclinationAnchor=makeDot(0x54d6dd,.012);view.scene.add(inclinationAnchor);
-const inclinationLabel=attachLabel(viewport,view.camera,inclinationAnchor,'inclination i','cyan');
-const labels = [attachLabel(viewport, view.camera, craft, 'spacecraft point'), attachLabel(viewport, view.camera, peri, 'periapsis', 'red'), attachLabel(viewport, view.camera, apo, 'apoapsis', 'cyan'), attachLabel(viewport, view.camera, centre, 'focus offset ae', 'green'), attachLabel(viewport, view.camera, aAnchor, 'semi-major axis a', 'green'), attachLabel(viewport, view.camera, bAnchor, 'semi-minor axis b', 'green'),attachLabel(viewport,view.camera,northPole,'N · North pole'),attachLabel(viewport,view.camera,axisAnchor,'Earth rotation axis · +Z')];
+const inclinationLabel=attachLabel(viewport,view.camera,inclinationAnchor,'inclination i','cyan',[16,-14]);
+const labels = [inclinationLabel, attachLabel(viewport, view.camera, craft, 'spacecraft ball','',[16,-16]), attachLabel(viewport, view.camera, peri, 'periapsis', 'red',[14,14]), attachLabel(viewport, view.camera, apo, 'apoapsis', 'cyan',[-14,14]), attachLabel(viewport, view.camera, centre, 'focus offset ae', 'green',[16,-14]), attachLabel(viewport, view.camera, aAnchor, 'semi-major axis a', 'green',[14,-14]), attachLabel(viewport, view.camera, bAnchor, 'semi-minor axis b', 'green',[14,-14]),attachLabel(viewport,view.camera,northPole,'N · North pole','',[12,-14]),attachLabel(viewport,view.camera,axisAnchor,'Earth rotation axis · +Z','',[18,-12])];
+let angleEquationVersion=0;
+
+function updateAngleEquation(v) {
+  const element=document.querySelector('#angleEquation'),version=++angleEquationVersion;
+  element.textContent=`\\[\\begin{aligned}i&=${v.inclination.toFixed(0)}^\\circ & \\Omega&=${v.raan.toFixed(0)}^\\circ\\\\\\omega&=${v.argp.toFixed(0)}^\\circ & M&=${v.anomaly.toFixed(0)}^\\circ\\end{aligned}\\]`;
+  const typeset=()=>{if(version!==angleEquationVersion)return;if(window.MathJax?.typesetPromise){window.MathJax.typesetClear?.([element]);window.MathJax.typesetPromise([element]).catch(()=>{});}else setTimeout(typeset,100)};typeset();
+}
 
 function update(v) {
+  updateAngleEquation(v);
   view.setEarthRotationScale(v.earthRotation);
   const elements = { a: EARTH_RADIUS_KM + v.altitude, e: v.eccentricity, i: radians(v.inclination), raan: radians(v.raan), argp: radians(v.argp) };
   const geometry = ellipseGeometry(elements.a, elements.e);

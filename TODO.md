@@ -20,6 +20,7 @@
 - [x] Collect categorized improvement feedback and new-demo suggestions using a Rust and SQLite backend.
 - [x] Apply feedback: plot drag eccentricity versus time, smooth J2 animation with speed control, and derive Dzhanibekov body shape from its moments.
 - [x] Apply feedback: restart the Dzhanibekov solver immediately when moments change and show the live Euler-equation state.
+- [x] Apply feedback: typeset the live Keplerian angles, render the spacecraft as a ball, and offset point labels.
 
 ## Next demonstrations
 
