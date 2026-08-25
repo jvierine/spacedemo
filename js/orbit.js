@@ -1,11 +1,16 @@
 export const EARTH_RADIUS_KM = 6378.137;
 export const EARTH_MU_KM3_S2 = 398600.4418;
 export const EARTH_J2 = 1.08262668e-3;
+export const EARTH_OBLIQUITY_DEG = 23.4392911;
 export const DAY_SECONDS = 86400;
 export const TAU = Math.PI * 2;
 
 export const radians = degrees => degrees * Math.PI / 180;
 export const degrees = angle => angle * 180 / Math.PI;
+
+export function eclipticDirection(longitude, obliquity = radians(EARTH_OBLIQUITY_DEG)) {
+  return [Math.cos(longitude), Math.sin(longitude) * Math.cos(obliquity), Math.sin(longitude) * Math.sin(obliquity)];
+}
 
 export function periodSeconds(aKm, mu = EARTH_MU_KM3_S2) {
   return TAU * Math.sqrt(aKm ** 3 / mu);
@@ -105,4 +110,3 @@ export function propagateAveragedDrag(initial, options) {
   }
   return { a, e, density: lastDensity, reentered };
 }
-

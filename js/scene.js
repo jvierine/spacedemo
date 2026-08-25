@@ -93,6 +93,7 @@ export function createSpaceScene(container, options = {}) {
   return {
     scene, camera, renderer, controls, earthGroup, earthScale: 1 / EARTH_RADIUS_KM,
     setEarthRotationScale(value) { earthRotationScale = Math.max(0, value); },
+    setEarthRotationAngle(value) { earthGroup.rotation.z = value; },
     render() {
       const now = performance.now(), elapsed = Math.min(.1, (now - previousRenderTime) / 1000);
       previousRenderTime = now;

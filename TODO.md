@@ -24,6 +24,9 @@
 - [x] Require a server-configured class password before accepting feedback.
 - [x] Apply feedback: widen and discretize all rigid-body moment sliders on one shared scale, including equal moments.
 - [x] Show the equivalence between Fortescue equation 4.38 and the J₂ apsidal-rate form used by the demo.
+- [x] Make the equations and sliders panel resizable with pointer and keyboard controls.
+- [x] Add a J₂ enable/disable comparison control.
+- [x] Show Earth’s rotation equator, physical axial tilt, and ecliptic plane in the J₂ scene.
 
 ## Next demonstrations
 
