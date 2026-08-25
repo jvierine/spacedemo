@@ -9,6 +9,7 @@ Group=spacedemo
 Environment=DATABASE_PATH=/var/lib/spacedemo/feedback.sqlite3
 Environment=BIND_ADDRESS=127.0.0.1:8789
 Environment=RUST_LOG=spacedemo_feedback=info
+EnvironmentFile=/etc/spacedemo-feedback.env
 ExecStart=/opt/spacedemo/bin/spacedemo-feedback
 Restart=on-failure
 RestartSec=3

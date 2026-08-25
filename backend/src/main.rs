@@ -1,4 +1,8 @@
-use std::{env, net::SocketAddr, path::{Path, PathBuf}};
+use std::{
+    env,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+};
 
 use axum::{
     extract::{DefaultBodyLimit, State},
@@ -17,6 +21,7 @@ const MAX_PAGE_CHARS: usize = 160;
 #[derive(Clone)]
 struct AppState {
     database_path: PathBuf,
+    feedback_password: String,
 }
 
 #[derive(Deserialize)]
@@ -24,6 +29,7 @@ struct FeedbackRequest {
     kind: String,
     message: String,
     page: String,
+    password: String,
     #[serde(default)]
     website: String,
 }
@@ -52,7 +58,11 @@ impl IntoResponse for ApiError {
             Self::BadRequest(message) => (StatusCode::BAD_REQUEST, message),
             Self::Database => (StatusCode::INTERNAL_SERVER_ERROR, "database error"),
         };
-        (status, Json(serde_json::json!({ "ok": false, "error": message }))).into_response()
+        (
+            status,
+            Json(serde_json::json!({ "ok": false, "error": message })),
+        )
+            .into_response()
     }
 }
 
@@ -69,10 +79,19 @@ async fn main() {
         .unwrap_or_else(|_| "127.0.0.1:8789".to_owned())
         .parse()
         .expect("BIND_ADDRESS must be a socket address");
+    let feedback_password =
+        env::var("FEEDBACK_PASSWORD").expect("FEEDBACK_PASSWORD must be configured");
+    assert!(
+        !feedback_password.is_empty(),
+        "FEEDBACK_PASSWORD must not be empty"
+    );
 
     initialize_database(&database_path).expect("failed to initialize feedback database");
 
-    let state = AppState { database_path };
+    let state = AppState {
+        database_path,
+        feedback_password,
+    };
     let app = Router::new()
         .route("/health", get(health))
         .route("/feedback", post(create_feedback))
@@ -98,7 +117,13 @@ async fn create_feedback(
     Json(payload): Json<FeedbackRequest>,
 ) -> Result<(StatusCode, Json<FeedbackResponse>), ApiError> {
     if !payload.website.trim().is_empty() {
-        return Ok((StatusCode::CREATED, Json(FeedbackResponse { ok: true, id: None })));
+        return Ok((
+            StatusCode::CREATED,
+            Json(FeedbackResponse { ok: true, id: None }),
+        ));
+    }
+    if !password_matches(&payload.password, &state.feedback_password) {
+        return Err(ApiError::BadRequest("invalid feedback password"));
     }
     let kind = validate_kind(&payload.kind)?;
     let message = validate_message(&payload.message)?;
@@ -123,18 +148,28 @@ async fn create_feedback(
         ApiError::Database
     })?;
 
-    Ok((StatusCode::CREATED, Json(FeedbackResponse { ok: true, id: Some(id) })))
+    Ok((
+        StatusCode::CREATED,
+        Json(FeedbackResponse {
+            ok: true,
+            id: Some(id),
+        }),
+    ))
 }
 
 async fn health(State(state): State<AppState>) -> Result<Json<HealthResponse>, ApiError> {
     let database_path = state.database_path;
     let count = tokio::task::spawn_blocking(move || -> rusqlite::Result<i64> {
-        open_database(&database_path)?.query_row("SELECT COUNT(*) FROM feedback", [], |row| row.get(0))
+        open_database(&database_path)?
+            .query_row("SELECT COUNT(*) FROM feedback", [], |row| row.get(0))
     })
     .await
     .map_err(|_| ApiError::Database)?
     .map_err(|_| ApiError::Database)?;
-    Ok(Json(HealthResponse { ok: true, stored_feedback: count }))
+    Ok(Json(HealthResponse {
+        ok: true,
+        stored_feedback: count,
+    }))
 }
 
 fn validate_kind(value: &str) -> Result<String, ApiError> {
@@ -145,11 +180,23 @@ fn validate_kind(value: &str) -> Result<String, ApiError> {
     }
 }
 
+fn password_matches(candidate: &str, expected: &str) -> bool {
+    let candidate = candidate.as_bytes();
+    let expected = expected.as_bytes();
+    let mut difference = candidate.len() ^ expected.len();
+    for (index, expected_byte) in expected.iter().enumerate() {
+        difference |= usize::from(candidate.get(index).copied().unwrap_or(0) ^ expected_byte);
+    }
+    difference == 0
+}
+
 fn validate_message(value: &str) -> Result<String, ApiError> {
     let trimmed = value.trim();
     let length = trimmed.chars().count();
     if length < 10 {
-        return Err(ApiError::BadRequest("feedback must contain at least 10 characters"));
+        return Err(ApiError::BadRequest(
+            "feedback must contain at least 10 characters",
+        ));
     }
     if length > MAX_MESSAGE_CHARS {
         return Err(ApiError::BadRequest("feedback is too long"));
@@ -203,6 +250,8 @@ mod tests {
         assert!(validate_page("/not-space/").is_err());
         assert!(validate_page("/spacex/").is_err());
         assert_eq!(validate_page("/space/j2/").unwrap(), "/space/j2/");
+        assert!(password_matches("class-password", "class-password"));
+        assert!(!password_matches("wrong", "class-password"));
     }
 
     #[test]
@@ -212,11 +261,19 @@ mod tests {
         initialize_database(&path).unwrap();
         initialize_database(&path).unwrap();
         let connection = open_database(&path).unwrap();
-        connection.execute(
-            "INSERT INTO feedback (kind, page, message) VALUES (?1, ?2, ?3)",
-            params!["improvement", "/space/drag/", "Please add a density profile."],
-        ).unwrap();
-        let count: i64 = connection.query_row("SELECT COUNT(*) FROM feedback", [], |row| row.get(0)).unwrap();
+        connection
+            .execute(
+                "INSERT INTO feedback (kind, page, message) VALUES (?1, ?2, ?3)",
+                params![
+                    "improvement",
+                    "/space/drag/",
+                    "Please add a density profile."
+                ],
+            )
+            .unwrap();
+        let count: i64 = connection
+            .query_row("SELECT COUNT(*) FROM feedback", [], |row| row.get(0))
+            .unwrap();
         assert_eq!(count, 1);
     }
 }

@@ -21,6 +21,9 @@ feedbackDialog.innerHTML = `
     <label>Your suggestion
       <textarea name="message" minlength="10" maxlength="2000" rows="6" required placeholder="What should be clearer, changed, or demonstrated next?"></textarea>
     </label>
+    <label>Class password
+      <input name="password" type="password" required autocomplete="off" spellcheck="false">
+    </label>
     <label class="feedback-honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
     <p class="feedback-privacy">Stored with this page’s address. No name, email, or IP address is requested.</p>
     <p class="feedback-status" role="status" aria-live="polite"></p>
@@ -53,6 +56,7 @@ feedbackForm.addEventListener('submit', async event => {
       body: JSON.stringify({
         kind: fields.get('kind'),
         message: fields.get('message'),
+        password: fields.get('password'),
         website: fields.get('website'),
         page: location.pathname
       })

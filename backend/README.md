@@ -5,7 +5,9 @@ This localhost-only Rust service accepts categorized feedback and stores it in S
 ## API
 
 - `GET /health`
-- `POST /feedback` with JSON `{ "kind": "improvement" | "new_demo", "page": "/space/...", "message": "..." }`
+- `POST /feedback` with JSON `{ "kind": "improvement" | "new_demo", "page": "/space/...", "message": "...", "password": "..." }`
+
+Set `FEEDBACK_PASSWORD` in the service environment. Production loads it from a root-readable `/etc/spacedemo-feedback.env`; never commit that file or place the value in frontend code.
 
 The production database lives at `/var/lib/spacedemo/feedback.sqlite3`, outside the public web root. To review suggestions on the server:
 
