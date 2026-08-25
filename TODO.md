@@ -23,6 +23,7 @@
 - [x] Apply feedback: typeset the live Keplerian angles, render the spacecraft as a ball, and offset point labels.
 - [x] Require a server-configured class password before accepting feedback.
 - [x] Apply feedback: widen and discretize all rigid-body moment sliders on one shared scale, including equal moments.
+- [x] Show the equivalence between Fortescue equation 4.38 and the J₂ apsidal-rate form used by the demo.
 
 ## Next demonstrations
 
