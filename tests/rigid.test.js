@@ -14,6 +14,12 @@ test('larger dimension corresponds to smaller axial moment',()=>{
 
 test('nonphysical moments are rejected',()=>assert.throws(()=>boxDimensionsFromMoments(1,2,4),RangeError));
 
+test('equal moments produce a symmetric body and constant angular velocity',()=>{
+  const dimensions=boxDimensionsFromMoments(4,4,4),derivative=torqueFreeDerivative([4,4,4],[.2,1.3,-.4]);
+  assert.ok(dimensions.every(value=>Math.abs(value-dimensions[0])<1e-14));
+  assert.ok(derivative.every(value=>Math.abs(value)===0));
+});
+
 test('changing moments immediately changes Euler coefficients and derivative',()=>{
   const omega=[.06,1.4,.0378],before=torqueFreeDerivative([2.5,3.5,4.5],omega),after=torqueFreeDerivative([3,3.5,4.5],omega);
   assert.notDeepEqual(eulerCoefficients(2.5,3.5,4.5),eulerCoefficients(3,3.5,4.5));

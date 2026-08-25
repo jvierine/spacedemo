@@ -22,6 +22,7 @@
 - [x] Apply feedback: restart the Dzhanibekov solver immediately when moments change and show the live Euler-equation state.
 - [x] Apply feedback: typeset the live Keplerian angles, render the spacecraft as a ball, and offset point labels.
 - [x] Require a server-configured class password before accepting feedback.
+- [x] Apply feedback: widen and discretize all rigid-body moment sliders on one shared scale, including equal moments.
 
 ## Next demonstrations
 

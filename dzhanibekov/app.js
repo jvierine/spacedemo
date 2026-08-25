@@ -9,7 +9,10 @@ function reset(reason='Manual reset'){
  omega=[params.perturbation,params.spin,params.perturbation*.63];q=new THREE.Quaternion();root.quaternion.copy(q);time=0;trail=[];flips=0;lastSign=1;solverGeneration+=1;replaceLine(trace,[]);updateSolverReadouts();
  document.querySelector('#solverNotice').textContent=`${reason}. Solver restarted immediately with I = (${params.ix.toFixed(1)}, ${params.iy.toFixed(1)}, ${params.iz.toFixed(1)}).`;
 }
-function updateBodyShape(){const dimensions=boxDimensionsFromMoments(params.ix,params.iy,params.iz);body.scale.set(...dimensions);document.querySelector('#shape').textContent=dimensions.map(value=>value.toFixed(2)).join(':')}
+function updateBodyShape(){
+ try{const dimensions=boxDimensionsFromMoments(params.ix,params.iy,params.iz);body.scale.set(...dimensions);document.querySelector('#shape').textContent=dimensions.map(value=>value.toFixed(2)).join(':');body.material.color.setHex(0xa8bbc0);return true}
+ catch{body.scale.set(1,1,1);body.material.color.setHex(0xff766d);document.querySelector('#shape').textContent='nonphysical';return false}
+}
 function updateLiveEquation(){
  const [c1,c2,c3]=eulerCoefficients(params.ix,params.iy,params.iz),element=document.querySelector('#liveEquation'),version=++equationVersion;
  element.textContent=`\\[\\begin{aligned}I&=(${params.ix.toFixed(1)},\\ ${params.iy.toFixed(1)},\\ ${params.iz.toFixed(1)})\\\\\\dot\\omega_1&=${c1.toFixed(3)}\\,\\omega_2\\omega_3\\\\\\dot\\omega_2&=${c2.toFixed(3)}\\,\\omega_3\\omega_1\\\\\\dot\\omega_3&=${c3.toFixed(3)}\\,\\omega_1\\omega_2\\end{aligned}\\]`;
@@ -19,7 +22,7 @@ function updateSolverReadouts(){
  if(!params||!omega)return;const acceleration=torqueFreeDerivative([params.ix,params.iy,params.iz],omega),format=values=>values.map(value=>value.toFixed(3)).join(', ');
  document.querySelector('#liveMoments').textContent=format([params.ix,params.iy,params.iz]);document.querySelector('#liveOmega').textContent=format(omega);document.querySelector('#liveDerivative').textContent=format(acceleration);document.querySelector('#solverGeneration').textContent=`#${solverGeneration}`;
 }
-sliderBindings(document.querySelector('#controls'),v=>{params=v;updateBodyShape();updateLiveEquation();reset('Parameters changed')});document.querySelector('#reset').addEventListener('click',()=>reset());document.querySelector('#toggle').addEventListener('click',e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause':'Play'});
+sliderBindings(document.querySelector('#controls'),v=>{params=v;const physical=updateBodyShape();updateLiveEquation();reset(physical?'Parameters changed':'Nonphysical inertia combination')});document.querySelector('#reset').addEventListener('click',()=>reset());document.querySelector('#toggle').addEventListener('click',e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause':'Play'});
 function derivative(w){return torqueFreeDerivative([params.ix,params.iy,params.iz],w)}
 function step(dt){const k1=derivative(omega),w2=omega.map((v,i)=>v+k1[i]*dt/2),k2=derivative(w2),w3=omega.map((v,i)=>v+k2[i]*dt/2),k3=derivative(w3),w4=omega.map((v,i)=>v+k3[i]*dt),k4=derivative(w4);omega=omega.map((v,i)=>v+dt*(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6);const mag=Math.hypot(...omega),dq=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...omega).normalize(),mag*dt);q.multiply(dq).normalize();root.quaternion.copy(q);time+=dt;
  const axis=new THREE.Vector3(0,1,0).applyQuaternion(q),sign=Math.sign(axis.dot(momentumArrow.getWorldDirection(new THREE.Vector3())));if(sign!==lastSign&&sign!==0){flips++;lastSign=sign}trail.push(axis.multiplyScalar(1.55).toArray());if(trail.length>900)trail.shift();replaceLine(trace,trail)}

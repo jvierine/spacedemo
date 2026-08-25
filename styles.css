@@ -71,6 +71,7 @@ h1 { margin: 8px 0 14px; font: 500 clamp(2.6rem, 7vw, 5.7rem)/.98 Georgia, serif
 .control-group { border-top: 1px solid var(--line); padding: 17px 0; }
 .control-group h2 { font-size: .7rem; margin: 0 0 14px; color: var(--muted); letter-spacing: .13em; text-transform: uppercase; }
 .slider-row { margin: 13px 0; }
+.control-note { margin:-4px 0 12px; color:var(--muted); font-size:.68rem; line-height:1.45; }
 .slider-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; font-size: .78rem; }
 .slider-head output { color: var(--cyan); font: .72rem ui-monospace, monospace; }
 input[type="range"] { width: 100%; accent-color: var(--cyan); margin: 8px 0 0; }
