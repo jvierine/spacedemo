@@ -159,7 +159,8 @@ fn validate_message(value: &str) -> Result<String, ApiError> {
 
 fn validate_page(value: &str) -> Result<String, ApiError> {
     let trimmed = value.trim();
-    if trimmed.is_empty() || trimmed.chars().count() > MAX_PAGE_CHARS || !trimmed.starts_with("/space") {
+    let is_space_page = trimmed == "/space" || trimmed.starts_with("/space/");
+    if trimmed.is_empty() || trimmed.chars().count() > MAX_PAGE_CHARS || !is_space_page {
         return Err(ApiError::BadRequest("invalid page"));
     }
     Ok(trimmed.to_owned())
@@ -200,6 +201,7 @@ mod tests {
         assert!(validate_message("too short").is_err());
         assert!(validate_message(&"x".repeat(MAX_MESSAGE_CHARS + 1)).is_err());
         assert!(validate_page("/not-space/").is_err());
+        assert!(validate_page("/spacex/").is_err());
         assert_eq!(validate_page("/space/j2/").unwrap(), "/space/j2/");
     }
 
