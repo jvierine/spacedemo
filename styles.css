@@ -78,6 +78,8 @@ input[type="range"] { width: 100%; accent-color: var(--cyan); margin: 8px 0 0; }
 .preset-row { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
 .preset-row button { padding:10px 4px; font-size:.61rem; }
 .state-note { min-height:3.1em; margin:12px 0 0; color:var(--cyan); font-size:.7rem; line-height:1.45; }
+.solver-notice { min-height:2.7em; color:var(--cyan); font-size:.68rem; line-height:1.45; }
+.live-equation { min-height:116px; margin-bottom:0; }
 button { font: 650 .7rem/1 inherit; color: var(--ink); background: rgba(255,255,255,.06); border: 1px solid var(--line); padding: 10px; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: .07em; }
 button:hover { border-color: var(--cyan); }
 button.accent { color: #071014; background: var(--accent); border-color: var(--accent); }

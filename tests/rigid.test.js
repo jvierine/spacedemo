@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { boxDimensionsFromMoments, relativeBoxMoments } from '../js/rigid.js';
+import { boxDimensionsFromMoments, eulerCoefficients, relativeBoxMoments, torqueFreeDerivative } from '../js/rigid.js';
 
 test('box dimensions reproduce principal moment ratios',()=>{
   const target=[2.5,3.5,4.5],dimensions=boxDimensionsFromMoments(...target),moments=relativeBoxMoments(dimensions),ratio=moments[0]/target[0];
@@ -13,3 +13,15 @@ test('larger dimension corresponds to smaller axial moment',()=>{
 });
 
 test('nonphysical moments are rejected',()=>assert.throws(()=>boxDimensionsFromMoments(1,2,4),RangeError));
+
+test('changing moments immediately changes Euler coefficients and derivative',()=>{
+  const omega=[.06,1.4,.0378],before=torqueFreeDerivative([2.5,3.5,4.5],omega),after=torqueFreeDerivative([3,3.5,4.5],omega);
+  assert.notDeepEqual(eulerCoefficients(2.5,3.5,4.5),eulerCoefficients(3,3.5,4.5));
+  assert.notDeepEqual(before,after);
+});
+
+test('Euler derivative conserves rotational energy instantaneously',()=>{
+  const moments=[2.5,3.5,4.5],omega=[.12,1.4,.08],derivative=torqueFreeDerivative(moments,omega);
+  const energyRate=moments.reduce((sum,moment,index)=>sum+moment*omega[index]*derivative[index],0);
+  assert.ok(Math.abs(energyRate)<1e-14);
+});
