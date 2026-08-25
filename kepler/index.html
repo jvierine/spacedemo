@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Interactive three-dimensional Keplerian orbit demonstration.">
-  <title>Keplerian orbits · Spacecraft Orbits</title><link rel="stylesheet" href="../styles.css?v=20260825-1">
+  <title>Keplerian orbits · Spacecraft Orbits</title><link rel="stylesheet" href="../styles.css?v=20260825-2"><script src="../js/mathjax.js"></script><script defer src="../js/qr.js"></script>
 </head><body class="demo-page">
   <header class="site-header"><a class="course-title" href="../"><span>Spacecraft Orbits</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
   <main class="demo-shell">
@@ -19,7 +19,7 @@
       <section class="control-group"><h2>Ellipse</h2><div class="readouts">
         <div class="readout"><span>Period</span><strong id="period"></strong></div><div class="readout"><span>Semi-minor b</span><strong id="minor"></strong></div>
         <div class="readout"><span>Perigee</span><strong id="perigee"></strong></div><div class="readout"><span>Apogee</span><strong id="apogee"></strong></div>
-      </div><p class="warning" id="warning"></p><p class="equation"><code>r = a(1 − e²)/(1 + e cos ν)</code><br>The Earth occupies one focus, not the ellipse centre.</p></section>
+      </div><p class="warning" id="warning"></p><p class="equation">\(r=\dfrac{a(1-e^2)}{1+e\cos\nu}\)<br>The Earth occupies one focus, not the ellipse centre.</p></section>
     </aside>
     <section class="viewport" id="viewport" aria-label="Interactive 3D orbit"><div class="legend"><span><i class="swatch" style="background:#ffb14e"></i>orbit</span><span><i class="swatch" style="background:#54d6dd"></i>equator</span></div><span class="hint">Drag: rotate · right-drag: pan · wheel: zoom</span></section>
   </main><script type="module" src="./app.js"></script>

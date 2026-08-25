@@ -18,7 +18,7 @@ export function createSpaceScene(container, options = {}) {
   controls.dampingFactor = .075;
   controls.screenSpacePanning = true;
   controls.minDistance = 1.25;
-  controls.maxDistance = 12;
+  controls.maxDistance = 30;
 
   scene.add(new THREE.HemisphereLight(0xbcecff, 0x102027, 2.2));
   const sun = new THREE.DirectionalLight(0xffffff, 2.7);

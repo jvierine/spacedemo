@@ -5,8 +5,10 @@ Interactive WebGL demonstrations accompanying FYS-3000 spacecraft systems materi
 - Keplerian two-body orbits and orbital elements
 - Atmospheric drag, ballistic properties, contraction, and circularization
 - J2 nodal regression, apsidal precession, and sun-synchronous orbits
+- Earth-orbit/Sun reference, sun-synchronous mismatch drift, and Molniya frozen-apsides comparison
 - Multistage rocket mass and delta-v budgets
 - Torque-free intermediate-axis instability (the Dzhanibekov effect)
+- QR codes and responsive phone layouts for classroom use
 
 The site is dependency-free at build time. It loads Three.js as an ES module from jsDelivr.
 
