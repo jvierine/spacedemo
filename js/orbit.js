@@ -12,6 +12,10 @@ export function eclipticDirection(longitude, obliquity = radians(EARTH_OBLIQUITY
   return [Math.cos(longitude), Math.sin(longitude) * Math.cos(obliquity), Math.sin(longitude) * Math.sin(obliquity)];
 }
 
+export function hasWellDefinedPeriapsis(eccentricity) {
+  return eccentricity >= 0.03;
+}
+
 export function periodSeconds(aKm, mu = EARTH_MU_KM3_S2) {
   return TAU * Math.sqrt(aKm ** 3 / mu);
 }

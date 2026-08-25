@@ -27,6 +27,7 @@
 - [x] Make the equations and sliders panel resizable with pointer and keyboard controls.
 - [x] Add a J₂ enable/disable comparison control.
 - [x] Show Earth’s rotation equator, physical axial tilt, and ecliptic plane in the J₂ scene.
+- [x] Remove J₂ scene flicker caused by aliased Earth spin, overlapping geometry, ecliptic diameters, and an ill-conditioned near-circular periapsis marker.
 
 ## Next demonstrations
 
