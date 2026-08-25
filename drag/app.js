@@ -21,7 +21,7 @@ function update(v){
   history.push({day,altitude:point.a-EARTH_RADIUS_KM,e:point.e});
  }
  renderChart(document.querySelector('#altitudeChart'),history,p=>p.day,p=>p.altitude,'days','km',0x54d6dd);
- renderChart(document.querySelector('#eccentricityChart'),history,p=>p.altitude,p=>p.e,'a − Rᴇ (km)','e',0xff766d);
+ renderChart(document.querySelector('#eccentricityChart'),history,p=>p.day,p=>p.e,'days','e',0xff766d);
 }
 sliderBindings(document.querySelector('#controls'),update); function animate(){requestAnimationFrame(animate);labels.forEach(l=>l.update());view.render()}animate();
 

@@ -1,11 +1,13 @@
 import { createSpaceScene, makeLine, replaceLine, sliderBindings, THREE } from '../js/scene.js';
+import { boxDimensionsFromMoments } from '../js/rigid.js';
 const viewport=document.querySelector('#viewport'),view=createSpaceScene(viewport,{earth:false,axis:false}),root=new THREE.Group();view.scene.add(root);view.camera.position.set(4,-5,3);
-const body=new THREE.Mesh(new THREE.BoxGeometry(1.8,.42,1.05),new THREE.MeshStandardMaterial({color:0xa8bbc0,roughness:.45,metalness:.25,transparent:true,opacity:.9}));root.add(body);
+const body=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0xa8bbc0,roughness:.45,metalness:.25,transparent:true,opacity:.9}));root.add(body);
 root.add(new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(),1.4,0xff766d,.16,.09),new THREE.ArrowHelper(new THREE.Vector3(0,1,0),new THREE.Vector3(),1.4,0x8bd99d,.16,.09),new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(),1.4,0x54d6dd,.16,.09));
 const momentumArrow=new THREE.ArrowHelper(new THREE.Vector3(0,1,0),new THREE.Vector3(),2.2,0xffb14e,.2,.11);view.scene.add(momentumArrow);const trace=makeLine([],0x8bd99d,.7);view.scene.add(trace);
 let params,omega,q,time=0,playing=true,trail=[],last=performance.now(),flips=0,lastSign=1;
 function reset(){omega=[params.perturbation,params.spin,params.perturbation*.63];q=new THREE.Quaternion();root.quaternion.copy(q);time=0;trail=[];flips=0;lastSign=1}
-sliderBindings(document.querySelector('#controls'),v=>{params=v;reset()});document.querySelector('#reset').addEventListener('click',reset);document.querySelector('#toggle').addEventListener('click',e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause':'Play'});
+function updateBodyShape(){const dimensions=boxDimensionsFromMoments(params.ix,params.iy,params.iz);body.scale.set(...dimensions);document.querySelector('#shape').textContent=dimensions.map(value=>value.toFixed(2)).join(':')}
+sliderBindings(document.querySelector('#controls'),v=>{params=v;updateBodyShape();reset()});document.querySelector('#reset').addEventListener('click',reset);document.querySelector('#toggle').addEventListener('click',e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause':'Play'});
 function derivative(w){return[(params.iy-params.iz)/params.ix*w[1]*w[2],(params.iz-params.ix)/params.iy*w[2]*w[0],(params.ix-params.iy)/params.iz*w[0]*w[1]]}
 function step(dt){const k1=derivative(omega),w2=omega.map((v,i)=>v+k1[i]*dt/2),k2=derivative(w2),w3=omega.map((v,i)=>v+k2[i]*dt/2),k3=derivative(w3),w4=omega.map((v,i)=>v+k3[i]*dt),k4=derivative(w4);omega=omega.map((v,i)=>v+dt*(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6);const mag=Math.hypot(...omega),dq=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...omega).normalize(),mag*dt);q.multiply(dq).normalize();root.quaternion.copy(q);time+=dt;
  const axis=new THREE.Vector3(0,1,0).applyQuaternion(q),sign=Math.sign(axis.dot(momentumArrow.getWorldDirection(new THREE.Vector3())));if(sign!==lastSign&&sign!==0){flips++;lastSign=sign}trail.push(axis.multiplyScalar(1.55).toArray());if(trail.length>900)trail.shift();replaceLine(trace,trail)}

@@ -18,6 +18,7 @@
 - [x] Dzhanibekov-effect simulation using torque-free Euler rigid-body dynamics.
 - [x] Render equations with larger MathJax typography and provide QR codes for phone access.
 - [x] Collect categorized improvement feedback and new-demo suggestions using a Rust and SQLite backend.
+- [x] Apply feedback: plot drag eccentricity versus time, smooth J2 animation with speed control, and derive Dzhanibekov body shape from its moments.
 
 ## Next demonstrations
 
