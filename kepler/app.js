@@ -1,5 +1,5 @@
 import { EARTH_RADIUS_KM, ellipseGeometry, periodSeconds, positionAtTrue, radians, sampleOrbit, trueFromMean } from '../js/orbit.js';
-import { attachLabel, createSpaceScene, makeDot, makeLine, replaceLine, scaled, setPosition, sliderBindings, THREE } from '../js/scene.js';
+import { attachLabel, createSpaceScene, makeDot, makeLine, makePoint, replaceLine, scaled, setPosition, sliderBindings } from '../js/scene.js';
 
 const viewport = document.querySelector('#viewport');
 const view = createSpaceScene(viewport);
@@ -7,14 +7,20 @@ const orbit = makeLine([], 0xffb14e, 1); view.scene.add(orbit);
 const major = makeLine([], 0x8bd99d, .75, true); view.scene.add(major);
 const minor = makeLine([], 0x8bd99d, .45, true); view.scene.add(minor);
 const nodes = makeLine([], 0x54d6dd, .7, true); view.scene.add(nodes);
-const craft = makeDot(0xffffff, .038); view.scene.add(craft);
+const inclinationArc = makeLine([],0x54d6dd,1);view.scene.add(inclinationArc);
+const craft = makePoint(0xffffff, .11); view.scene.add(craft);
 const peri = makeDot(0xff766d, .026); view.scene.add(peri);
 const apo = makeDot(0x54d6dd, .026); view.scene.add(apo);
 const centre = makeDot(0x8bd99d, .018); view.scene.add(centre);
 const aAnchor = makeDot(0x8bd99d, .001), bAnchor = makeDot(0x8bd99d, .001); view.scene.add(aAnchor, bAnchor);
-const labels = [attachLabel(viewport, view.camera, craft, 'spacecraft'), attachLabel(viewport, view.camera, peri, 'periapsis', 'red'), attachLabel(viewport, view.camera, apo, 'apoapsis', 'cyan'), attachLabel(viewport, view.camera, centre, 'focus offset ae', 'green'), attachLabel(viewport, view.camera, aAnchor, 'semi-major axis a', 'green'), attachLabel(viewport, view.camera, bAnchor, 'semi-minor axis b', 'green')];
+const northPole = makeDot(0xffffff, .022); northPole.position.set(0,0,1.055); view.scene.add(northPole);
+const axisAnchor=makeDot(0xffffff,.001);axisAnchor.position.set(0,0,1.46);view.scene.add(axisAnchor);
+const inclinationAnchor=makeDot(0x54d6dd,.012);view.scene.add(inclinationAnchor);
+const inclinationLabel=attachLabel(viewport,view.camera,inclinationAnchor,'inclination i','cyan');
+const labels = [attachLabel(viewport, view.camera, craft, 'spacecraft point'), attachLabel(viewport, view.camera, peri, 'periapsis', 'red'), attachLabel(viewport, view.camera, apo, 'apoapsis', 'cyan'), attachLabel(viewport, view.camera, centre, 'focus offset ae', 'green'), attachLabel(viewport, view.camera, aAnchor, 'semi-major axis a', 'green'), attachLabel(viewport, view.camera, bAnchor, 'semi-minor axis b', 'green'),attachLabel(viewport,view.camera,northPole,'N · North pole'),attachLabel(viewport,view.camera,axisAnchor,'Earth rotation axis · +Z')];
 
 function update(v) {
+  view.setEarthRotationScale(v.earthRotation);
   const elements = { a: EARTH_RADIUS_KM + v.altitude, e: v.eccentricity, i: radians(v.inclination), raan: radians(v.raan), argp: radians(v.argp) };
   const geometry = ellipseGeometry(elements.a, elements.e);
   const nu = trueFromMean(radians(v.anomaly), elements.e);
@@ -35,6 +41,9 @@ function update(v) {
   replaceLine(minor, scaled([m1,m2]));
   const nodeLength = elements.a * 1.2;
   replaceLine(nodes, [[-nodeLength/EARTH_RADIUS_KM*Math.cos(elements.raan),-nodeLength/EARTH_RADIUS_KM*Math.sin(elements.raan),0],[nodeLength/EARTH_RADIUS_KM*Math.cos(elements.raan),nodeLength/EARTH_RADIUS_KM*Math.sin(elements.raan),0]]);
+  const arcRadius=1.38,node=[Math.cos(elements.raan),Math.sin(elements.raan),0],equatorialNormal=[-Math.sin(elements.raan),Math.cos(elements.raan),0];
+  const arcPoints=Array.from({length:41},(_,k)=>{const angle=elements.i*k/40,c=Math.cos(angle),s=Math.sin(angle),cross=[node[1]*equatorialNormal[2]-node[2]*equatorialNormal[1],node[2]*equatorialNormal[0]-node[0]*equatorialNormal[2],node[0]*equatorialNormal[1]-node[1]*equatorialNormal[0]];return equatorialNormal.map((value,j)=>arcRadius*(value*c+cross[j]*s+node[j]*(node[0]*equatorialNormal[0]+node[1]*equatorialNormal[1])* (1-c)))});
+  replaceLine(inclinationArc,arcPoints);inclinationAnchor.position.set(...arcPoints[Math.floor(arcPoints.length/2)]);inclinationLabel.setText(`inclination i = ${v.inclination.toFixed(0)}°`);
   document.querySelector('#period').textContent = `${(periodSeconds(elements.a)/60).toFixed(1)} min`;
   document.querySelector('#minor').textContent = `${geometry.b.toFixed(0)} km`;
   document.querySelector('#perigee').textContent = `${(geometry.rp-EARTH_RADIUS_KM).toFixed(0)} km`;

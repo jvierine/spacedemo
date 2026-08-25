@@ -25,20 +25,45 @@ export function createSpaceScene(container, options = {}) {
   sun.position.set(-4, -3, 5);
   scene.add(sun);
 
+  const earthGroup = new THREE.Group();
   const earth = new THREE.Mesh(
     new THREE.SphereGeometry(1, 64, 36),
     new THREE.MeshStandardMaterial({ color: 0x173d4c, roughness: .72, metalness: .05 })
   );
-  if (options.earth !== false) scene.add(earth);
+  // Three.js spheres use +Y as their polar axis; orbital coordinates use +Z.
+  earth.rotation.x = Math.PI / 2;
+  earthGroup.add(earth);
   const wire = new THREE.Mesh(
     new THREE.SphereGeometry(1.006, 36, 18),
     new THREE.MeshBasicMaterial({ color: 0x4b8a98, wireframe: true, transparent: true, opacity: .24 })
   );
-  if (options.earth !== false) scene.add(wire);
+  wire.rotation.x = Math.PI / 2;
+  earthGroup.add(wire);
+  const primeMeridian = makeLine(Array.from({ length: 121 }, (_, k) => {
+    const latitude = -Math.PI / 2 + Math.PI * k / 120;
+    return [1.012 * Math.cos(latitude), 0, 1.012 * Math.sin(latitude)];
+  }), 0xffb14e, .9);
+  earthGroup.add(primeMeridian);
+  if (options.earth !== false) scene.add(earthGroup);
   const equator = makeLine(circlePoints(1.025, 160), 0x54d6dd, .35);
   if (options.earth !== false) scene.add(equator);
-  const axis = makeLine([[0,0,-1.35],[0,0,1.35]], 0x90a1a8, .42);
-  if (options.axis !== false) scene.add(axis);
+  if (options.earth !== false && options.equatorialPlane !== false) {
+    const plane = new THREE.Mesh(
+      new THREE.CircleGeometry(1.65, 96),
+      new THREE.MeshBasicMaterial({ color: 0x54d6dd, transparent: true, opacity: .055, side: THREE.DoubleSide, depthWrite: false })
+    );
+    scene.add(plane);
+    for (const radius of [1.2, 1.42, 1.65]) scene.add(makeLine(circlePoints(radius, 160), 0x54d6dd, .14));
+    const spokes = [];
+    for (let k = 0; k < 12; k += 1) {
+      const angle = k * Math.PI / 6;
+      spokes.push(new THREE.Vector3(1.04*Math.cos(angle),1.04*Math.sin(angle),0),new THREE.Vector3(1.65*Math.cos(angle),1.65*Math.sin(angle),0));
+    }
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(spokes),new THREE.LineBasicMaterial({color:0x54d6dd,transparent:true,opacity:.13})));
+  }
+  const axis = makeLine([[0,0,-1.38],[0,0,1.38]], 0xffffff, .68);
+  const northArrow = new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(0,0,0),1.48,0xffffff,.14,.075);
+  if (options.axis !== false) scene.add(axis,northArrow);
 
   const starsGeometry = new THREE.BufferGeometry();
   const positions = [];
@@ -62,7 +87,20 @@ export function createSpaceScene(container, options = {}) {
   observer.observe(container);
   resize();
 
-  return { scene, camera, renderer, controls, earthScale: 1 / EARTH_RADIUS_KM, render() { controls.update(); renderer.render(scene, camera); }, dispose() { observer.disconnect(); renderer.dispose(); } };
+  let earthRotationScale = options.earthRotationScale ?? 0;
+  let previousRenderTime = performance.now();
+
+  return {
+    scene, camera, renderer, controls, earthGroup, earthScale: 1 / EARTH_RADIUS_KM,
+    setEarthRotationScale(value) { earthRotationScale = Math.max(0, value); },
+    render() {
+      const now = performance.now(), elapsed = Math.min(.1, (now - previousRenderTime) / 1000);
+      previousRenderTime = now;
+      earthGroup.rotation.z += elapsed * (Math.PI * 2 / 86164.1) * earthRotationScale;
+      controls.update(); renderer.render(scene, camera);
+    },
+    dispose() { observer.disconnect(); renderer.dispose(); }
+  };
 }
 
 function pseudo(seed) { const x = Math.sin(seed * 12.9898) * 43758.5453; return x - Math.floor(x); }
@@ -88,6 +126,12 @@ export function replaceLine(line, points) {
 
 export function makeDot(color = 0xffb14e, radius = .035) {
   return new THREE.Mesh(new THREE.SphereGeometry(radius, 18, 12), new THREE.MeshBasicMaterial({ color }));
+}
+
+export function makePoint(color = 0xffffff, size = .09) {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3));
+  return new THREE.Points(geometry, new THREE.PointsMaterial({ color, size, sizeAttenuation: true }));
 }
 
 export function setPosition(object, point, scale = 1 / EARTH_RADIUS_KM) { object.position.set(point[0] * scale, point[1] * scale, point[2] * scale); }

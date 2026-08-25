@@ -1,0 +1,25 @@
+[Unit]
+Description=SpaceDemo feedback API
+After=network.target
+
+[Service]
+Type=simple
+User=spacedemo
+Group=spacedemo
+Environment=DATABASE_PATH=/var/lib/spacedemo/feedback.sqlite3
+Environment=BIND_ADDRESS=127.0.0.1:8789
+Environment=RUST_LOG=spacedemo_feedback=info
+ExecStart=/opt/spacedemo/bin/spacedemo-feedback
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/spacedemo
+RestrictSUIDSGID=true
+LockPersonality=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -3,8 +3,10 @@ import { attachLabel, createSpaceScene, makeDot, makeLine, replaceLine, scaled, 
 const controls=document.querySelector('#controls'),viewport=document.querySelector('#viewport'),view=createSpaceScene(viewport);
 const ghost=makeLine([],0x90a1a8,.45,true),orbit=makeLine([],0x8bd99d,1),apsides=makeLine([],0xffb14e,.9),nodes=makeLine([],0x54d6dd,.8);view.scene.add(ghost,orbit,apsides,nodes);
 const ascending=makeDot(0x54d6dd,.03),peri=makeDot(0xffb14e,.032);view.scene.add(ascending,peri);
+const northPole=makeDot(0xffffff,.022);northPole.position.set(0,0,1.055);view.scene.add(northPole);
 const sunLine=makeLine([],0xffe09a,.9),sunDot=makeDot(0xffe09a,.055);view.scene.add(sunLine,sunDot);
-const labels=[attachLabel(viewport,view.camera,ascending,'ascending node Ω','cyan'),attachLabel(viewport,view.camera,peri,'periapsis ω','orange'),attachLabel(viewport,view.camera,sunDot,'Sun direction','orange')];
+const axisAnchor=makeDot(0xffffff,.001);axisAnchor.position.set(0,0,1.46);view.scene.add(axisAnchor);
+const labels=[attachLabel(viewport,view.camera,ascending,'ascending node Ω','cyan'),attachLabel(viewport,view.camera,peri,'periapsis ω','orange'),attachLabel(viewport,view.camera,sunDot,'Sun direction','orange'),attachLabel(viewport,view.camera,northPole,'N · North pole'),attachLabel(viewport,view.camera,axisAnchor,'Earth rotation axis · +Z')];
 let latest,playing=false,last=performance.now();
 const refresh=sliderBindings(controls,v=>{latest=v;renderState(v)});
 function renderState(v){
@@ -34,8 +36,8 @@ function renderState(v){
 function setValues(values){Object.entries(values).forEach(([id,value])=>{document.querySelector(`#${id}`).value=String(value)});refresh()}
 function fitNearEarth(){view.camera.position.set(2.6,-3.2,2.2);view.controls.target.set(0,0,0)}
 function selectPreset(id){document.querySelectorAll('.preset-row button').forEach(button=>button.classList.toggle('accent',button.id===id))}
-document.querySelector('#sso').addEventListener('click',()=>{setValues({altitude:700,eccentricity:.01,argp:0,days:180});const a=EARTH_RADIUS_KM+700,i=sunSynchronousInclination(a,.01,EARTH_J2);setValues({inclination:degrees(i).toFixed(1)});fitNearEarth();selectPreset('sso')});
-document.querySelector('#molniya').addEventListener('click',()=>{setValues({altitude:20200,eccentricity:.74,inclination:63.4,argp:270,days:60});view.camera.position.set(12,-15,9);view.controls.target.set(0,0,0);selectPreset('molniya')});
-document.querySelector('#mismatch').addEventListener('click',()=>{const e=Number(document.querySelector('#eccentricity').value);if(e>.4){setValues({inclination:68.4,days:180});view.camera.position.set(12,-15,9)}else{const a=EARTH_RADIUS_KM+Number(document.querySelector('#altitude').value),i=sunSynchronousInclination(a,e,EARTH_J2);if(Number.isFinite(i)){setValues({inclination:(degrees(i)+5).toFixed(1),days:180});fitNearEarth()}}selectPreset('mismatch')});
+document.querySelector('#sso').addEventListener('click',()=>{setValues({altitude:700,eccentricity:.01,argp:0,days:365});const a=EARTH_RADIUS_KM+700,i=sunSynchronousInclination(a,.01,EARTH_J2);setValues({inclination:degrees(i).toFixed(1)});fitNearEarth();selectPreset('sso')});
+document.querySelector('#molniya').addEventListener('click',()=>{setValues({altitude:20200,eccentricity:.74,inclination:63.4,argp:270,days:365});view.camera.position.set(12,-15,9);view.controls.target.set(0,0,0);selectPreset('molniya')});
+document.querySelector('#mismatch').addEventListener('click',()=>{const e=Number(document.querySelector('#eccentricity').value);if(e>.4){setValues({inclination:68.4,days:730});view.camera.position.set(12,-15,9)}else{const a=EARTH_RADIUS_KM+Number(document.querySelector('#altitude').value),i=sunSynchronousInclination(a,e,EARTH_J2);if(Number.isFinite(i)){setValues({inclination:(degrees(i)+5).toFixed(1),days:730});fitNearEarth()}}selectPreset('mismatch')});
 document.querySelector('#reset').addEventListener('click',()=>{document.querySelector('#days').value='0';refresh()});document.querySelector('#play').addEventListener('click',e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause':'Play'});
-function animate(now){requestAnimationFrame(animate);if(playing&&latest){const input=document.querySelector('#days');input.value=(Number(input.value)+(now-last)*.0025)%365;refresh()}last=now;labels.forEach(l=>l.update());view.render()}requestAnimationFrame(animate);
+function animate(now){requestAnimationFrame(animate);if(playing&&latest){const input=document.querySelector('#days');input.value=(Number(input.value)+(now-last)*.025)%7305;refresh()}last=now;labels.forEach(l=>l.update());view.render()}requestAnimationFrame(animate);
