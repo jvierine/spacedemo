@@ -41,7 +41,7 @@ const presets={
   sso:{name:'Sun-synchronous LEO',altitude:600,eccentricity:0,inclination:degrees(sunSynchronousInclination(EARTH_RADIUS_KM+600)),argp:0,planeCount:1,satelliteCount:3,useJ2:true},
   leo:{name:'Arbitrary LEO',altitude:500,eccentricity:0,inclination:45,argp:0,planeCount:1,satelliteCount:3},
   vleo:{name:'VLEO',altitude:250,eccentricity:0,inclination:51.6,argp:0,planeCount:1,satelliteCount:3},
-  meo:{name:'Navigation MEO',altitude:navigationAltitude,eccentricity:0,inclination:55,argp:0,planeCount:3,satelliteCount:2},
+  meo:{name:'GPS baseline constellation',altitude:navigationAltitude,eccentricity:0,inclination:55,argp:0,planeCount:6,satelliteCount:4},
   molniya:{name:'Molniya',altitude:20200,eccentricity:.74,inclination:63.4,argp:270,planeCount:3,satelliteCount:1,useJ2:true},
   geo:{name:'Geostationary orbit',altitude:siderealGeoAltitude,eccentricity:0,inclination:0,argp:0,planeCount:1,satelliteCount:3},
   gto:{name:'Geostationary transfer orbit',altitude:(gtoPerigee+gtoApogee)/2-EARTH_RADIUS_KM,eccentricity:(gtoApogee-gtoPerigee)/(gtoApogee+gtoPerigee),inclination:28.5,argp:0,planeCount:1,satelliteCount:1}
