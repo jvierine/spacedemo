@@ -1,4 +1,4 @@
-# Spacecraft orbit demonstrations
+# Space Systems Engineering demonstrations
 
 Interactive WebGL demonstrations of spacecraft systems and orbital mechanics.
 

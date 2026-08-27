@@ -1,7 +1,6 @@
-import { DAY_SECONDS, EARTH_J2, EARTH_OBLIQUITY_DEG, EARTH_RADIUS_KM, degrees, eclipticDirection, hasWellDefinedPeriapsis, j2Rates, periodSeconds, positionAtTrue, radians, sampleOrbit, sunSynchronousInclination } from '../js/orbit.js?v=20260825-9';
-import { attachLabel, createSpaceScene, makeDot, makeLine, replaceLine, scaled, setPosition, sliderBindings } from '../js/scene.js?v=20260825-7';
-const controls=document.querySelector('#controls'),viewport=document.querySelector('#viewport'),j2Toggle=document.querySelector('#enableJ2'),view=createSpaceScene(viewport);
-view.setEarthRotationScale(12000);
+import { DAY_SECONDS, EARTH_J2, EARTH_OBLIQUITY_DEG, EARTH_RADIUS_KM, degrees, earthRotationCycles, eclipticDirection, hasWellDefinedPeriapsis, j2Rates, periodSeconds, positionAtTrue, radians, sampleOrbit, sunSynchronousInclination } from '../js/orbit.js?v=20260826-1';
+import { attachLabel, createSpaceScene, makeDot, makeLine, replaceLine, scaled, setPosition, sliderBindings } from '../js/scene.js?v=20260826-1';
+const controls=document.querySelector('#controls'),viewport=document.querySelector('#viewport'),j2Toggle=document.querySelector('#enableJ2'),view=createSpaceScene(viewport,{hemisphereIntensity:.55,sunIntensity:3.4});
 const ghost=makeLine([],0x90a1a8,.45,true),orbit=makeLine([],0x8bd99d,1),apsePeri=makeLine([],0xffb14e,.9),apseApo=makeLine([],0xffb14e,.9),nodes=makeLine([],0x54d6dd,.8);view.scene.add(ghost,orbit,apsePeri,apseApo,nodes);
 const ascending=makeDot(0x54d6dd,.03),peri=makeDot(0xffb14e,.032);view.scene.add(ascending,peri);
 const northPole=makeDot(0xffffff,.022);northPole.position.set(0,0,1.055);view.scene.add(northPole);
@@ -13,9 +12,10 @@ const eclipticAnchor=makeDot(0xffe09a,.001);eclipticAnchor.position.set(...eclip
 const obliquity=radians(EARTH_OBLIQUITY_DEG),tiltArc=makeLine(Array.from({length:31},(_,index)=>{const angle=obliquity*index/30;return[0,-1.28*Math.sin(angle),1.28*Math.cos(angle)]}),0xffe09a,.85),tiltAnchor=makeDot(0xffe09a,.001);tiltAnchor.position.set(0,-1.36*Math.sin(obliquity/2),1.36*Math.cos(obliquity/2));view.scene.add(tiltArc,tiltAnchor);
 const periLabel=attachLabel(viewport,view.camera,peri,'periapsis ω','orange');
 const labels=[attachLabel(viewport,view.camera,ascending,'ascending node Ω','cyan'),periLabel,attachLabel(viewport,view.camera,sunDot,'Sun direction · ecliptic','orange'),attachLabel(viewport,view.camera,northPole,'N · North pole'),attachLabel(viewport,view.camera,axisAnchor,'Earth rotation axis · +Z'),attachLabel(viewport,view.camera,equatorAnchor,'Earth rotation equator','cyan',[-54,12]),attachLabel(viewport,view.camera,eclipticAnchor,'ecliptic plane','orange',[16,-12]),attachLabel(viewport,view.camera,tiltAnchor,`axial tilt ε = ${EARTH_OBLIQUITY_DEG.toFixed(2)}°`,'orange',[18,-8])];
-let latest,playing=false,last=performance.now();
-const refresh=sliderBindings(controls,v=>{latest=v;renderState(v)});
+let latest,playing=true,last=performance.now(),animationDays=0;
+const refresh=sliderBindings(controls,v=>{latest=v;animationDays=v.days;renderState(v)});
 function renderState(v){
+ view.setEarthRotationAngle(2*Math.PI*(earthRotationCycles(v.days)%1));
  const original={a:EARTH_RADIUS_KM+v.altitude,e:v.eccentricity,i:radians(v.inclination),raan:radians(18),argp:radians(v.argp)};
  const physicalRates=j2Rates(original,EARTH_J2),j2Enabled=j2Toggle.checked,rates=j2Enabled?physicalRates:{raan:0,argp:0},dt=v.days*DAY_SECONDS;
  const current={...original,raan:original.raan+rates.raan*dt,argp:original.argp+rates.argp*dt};
@@ -26,8 +26,10 @@ function renderState(v){
  const nLen=current.a*1.2,co=Math.cos(current.raan),so=Math.sin(current.raan);replaceLine(nodes,scaled([[-nLen*co,-nLen*so,0],[nLen*co,nLen*so,0]]));
  setPosition(ascending,positionAtTrue(current,-current.argp));setPosition(peri,periPosition);
  const yearAngle=2*Math.PI*v.days/365.2422,sunLongitude=yearAngle+Math.PI,sunDistance=2.35,sunDirection=eclipticDirection(sunLongitude);
- replaceLine(sunLine,[[0,0,0],sunDirection.map(value=>value*sunDistance)]);sunDot.position.set(...sunDirection.map(value=>value*sunDistance));
- const insetEarth=document.querySelector('#insetEarth');insetEarth.style.transform=`translate(-50%,-50%) rotate(${v.days/365.2422*360}deg) translateX(52px) rotate(${-v.days/365.2422*360}deg)`;
+ replaceLine(sunLine,[[0,0,0],sunDirection.map(value=>value*sunDistance)]);sunDot.position.set(...sunDirection.map(value=>value*sunDistance));view.setSunDirection(sunDirection);
+ const insetEarth=document.querySelector('#insetEarth'),insetTrail=[...document.querySelectorAll('.inset-earth-trail')],yearPhase=2*Math.PI*v.days/365.2422;
+ const placeInsetBody=(element,phase)=>{element.style.left=`${50+42*Math.cos(phase)}%`;element.style.top=`${50+42*Math.sin(phase)}%`};
+ placeInsetBody(insetEarth,yearPhase);insetTrail.forEach((element,index)=>placeInsetBody(element,yearPhase-(index+1)*.16));
  const dayFactor=DAY_SECONDS*180/Math.PI;
  document.querySelector('#nodeRate').textContent=`${(rates.raan*dayFactor).toFixed(3)} °/day`;document.querySelector('#apseRate').textContent=`${(rates.argp*dayFactor).toFixed(3)} °/day`;
  document.querySelector('#nodeDelta').textContent=`${degrees(rates.raan*dt).toFixed(1)}°`;document.querySelector('#apseDelta').textContent=`${degrees(rates.argp*dt).toFixed(1)}°`;
@@ -50,4 +52,4 @@ document.querySelector('#molniya').addEventListener('click',()=>{enableJ2();setV
 document.querySelector('#mismatch').addEventListener('click',()=>{enableJ2();const e=Number(document.querySelector('#eccentricity').value);if(e>.4){setValues({inclination:68.4,days:730});view.camera.position.set(12,-15,9)}else{const a=EARTH_RADIUS_KM+Number(document.querySelector('#altitude').value),i=sunSynchronousInclination(a,e,EARTH_J2);if(Number.isFinite(i)){setValues({inclination:(degrees(i)+5).toFixed(1),days:730});fitNearEarth()}}selectPreset('mismatch')});
  j2Toggle.addEventListener('change',()=>{selectPreset('');refresh()});
 document.querySelector('#reset').addEventListener('click',()=>{document.querySelector('#days').value='0';refresh()});document.querySelector('#play').addEventListener('click',e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause':'Play'});
-function animate(now){requestAnimationFrame(animate);if(playing&&latest){const input=document.querySelector('#days'),elapsedSeconds=Math.min(.1,(now-last)/1000);input.value=(Number(input.value)+elapsedSeconds*latest.animationSpeed)%7305;refresh()}last=now;labels.forEach(l=>l.update());if(!peri.visible)periLabel.element.hidden=true;view.render()}requestAnimationFrame(animate);
+function animate(now){requestAnimationFrame(animate);if(playing&&latest){const input=document.querySelector('#days'),elapsedSeconds=Math.min(.1,(now-last)/1000);animationDays=(animationDays+elapsedSeconds*latest.animationSpeed)%7305;input.value=String(animationDays);latest={...latest,days:animationDays};document.querySelector('[data-output="days"]').textContent=`${animationDays.toFixed(3)} days`;renderState(latest)}last=now;labels.forEach(l=>l.update());if(!peri.visible)periLabel.element.hidden=true;view.render()}requestAnimationFrame(animate);

@@ -20,8 +20,8 @@ export function createSpaceScene(container, options = {}) {
   controls.minDistance = 1.25;
   controls.maxDistance = 30;
 
-  scene.add(new THREE.HemisphereLight(0xbcecff, 0x102027, 2.2));
-  const sun = new THREE.DirectionalLight(0xffffff, 2.7);
+  scene.add(new THREE.HemisphereLight(0xbcecff, 0x102027, options.hemisphereIntensity ?? 2.2));
+  const sun = new THREE.DirectionalLight(0xffffff, options.sunIntensity ?? 2.7);
   sun.position.set(-4, -3, 5);
   scene.add(sun);
 
@@ -94,6 +94,13 @@ export function createSpaceScene(container, options = {}) {
     scene, camera, renderer, controls, earthGroup, earthScale: 1 / EARTH_RADIUS_KM,
     setEarthRotationScale(value) { earthRotationScale = Math.max(0, value); },
     setEarthRotationAngle(value) { earthGroup.rotation.z = value; },
+    setSunDirection(direction) {
+      const length = Math.hypot(...direction);
+      if (!Number.isFinite(length) || length === 0) return;
+      sun.position.set(...direction.map(value => 5 * value / length));
+      sun.target.position.set(0, 0, 0);
+      sun.target.updateMatrixWorld();
+    },
     render() {
       const now = performance.now(), elapsed = Math.min(.1, (now - previousRenderTime) / 1000);
       previousRenderTime = now;

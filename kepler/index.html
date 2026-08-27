@@ -1,14 +1,14 @@
 <!doctype html><html lang="en"><head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Interactive three-dimensional Keplerian orbit demonstration.">
-  <title>Keplerian orbits · Spacecraft Orbits</title><link rel="stylesheet" href="../styles.css?v=20260825-6"><script src="../js/mathjax.js"></script><script defer src="../js/qr.js"></script><script defer src="../js/feedback.js?v=20260825-4"></script><script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
+  <title>Keplerian orbits · Space Systems Engineering</title><link rel="stylesheet" href="../styles.css?v=20260827-1"><script src="../js/mathjax.js"></script><script defer src="../js/qr.js"></script><script defer src="../js/feedback.js?v=20260825-4"></script><script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
 </head><body class="demo-page">
-  <header class="site-header"><a class="course-title" href="../"><span>Spacecraft Orbits</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
+  <header class="site-header"><a class="course-title" href="../"><span>Space Systems Engineering</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
   <main class="demo-shell">
     <aside class="controls" id="controls"><a class="back" href="../">← All demonstrations</a><h1>Keplerian orbits</h1><p class="lede">The six elements describe the size, shape, plane, orientation, and current position of an ideal two-body orbit.</p>
       <section class="control-group"><h2>Size and shape</h2>
         <div class="slider-row"><div class="slider-head"><label for="altitude">Semi-major altitude</label><output data-output="altitude"></output></div><input id="altitude" type="range" min="200" max="20000" step="10" value="400" data-unit="km"></div>
-        <div class="slider-row"><div class="slider-head"><label for="eccentricity">Eccentricity e</label><output data-output="eccentricity"></output></div><input id="eccentricity" type="range" min="0" max="0.72" step="0.01" value="0.03"></div>
+        <div class="slider-row"><div class="slider-head"><label for="eccentricity">Eccentricity e</label><output data-output="eccentricity"></output></div><input id="eccentricity" type="range" min="0" max="0.9" step="0.01" value="0.03"></div>
       </section>
       <section class="control-group"><h2>Orientation</h2>
         <div class="slider-row"><div class="slider-head"><label for="inclination">Inclination i</label><output data-output="inclination"></output></div><input id="inclination" type="range" min="0" max="180" step="1" value="52" data-unit="°"></div>
@@ -21,7 +21,8 @@
       <section class="control-group"><h2>Ellipse</h2><div class="readouts">
         <div class="readout"><span>Period</span><strong id="period"></strong></div><div class="readout"><span>Semi-minor b</span><strong id="minor"></strong></div>
         <div class="readout"><span>Perigee</span><strong id="perigee"></strong></div><div class="readout"><span>Apogee</span><strong id="apogee"></strong></div>
-      </div><p class="warning" id="warning"></p><p class="equation">\(r=\dfrac{a(1-e^2)}{1+e\cos\nu}\)<br>The Earth occupies one focus, not the ellipse centre.</p></section>
+      </div><p class="warning" id="warning"></p><p class="equation">\(T=2\pi\sqrt{\dfrac{a^3}{\mu_E}}\)<br><a href="https://farside.ph.utexas.edu/teaching/celestial/Celestialhtml/node29.html">Fitzpatrick: Kepler’s third law</a><br>\(r=\dfrac{a(1-e^2)}{1+e\cos\nu}\)<br>The Earth occupies one focus, not the ellipse centre.</p></section>
+      <section class="variable-key" aria-label="Variable definitions"><h2>Variables</h2><dl><dt>\(T\)</dt><dd>orbital period</dd><dt>\(a\)</dt><dd>orbital semi-major axis</dd><dt>\(b\)</dt><dd>orbital semi-minor axis</dd><dt>\(e\)</dt><dd>orbital eccentricity</dd><dt>\(i\)</dt><dd>inclination to Earth’s equator</dd><dt>\(\Omega\)</dt><dd>right ascension of the ascending node</dd><dt>\(\omega\)</dt><dd>argument of periapsis</dd><dt>\(M\)</dt><dd>mean anomaly</dd><dt>\(\nu\)</dt><dd>true anomaly</dd><dt>\(r\)</dt><dd>distance from Earth’s centre</dd><dt>\(\mu_E\)</dt><dd>Earth’s standard gravitational parameter</dd><dt>\(\omega_E\)</dt><dd>Earth’s sidereal angular rotation rate</dd></dl></section>
     </aside>
     <section class="viewport" id="viewport" aria-label="Interactive 3D orbit"><div class="legend"><span><i class="swatch" style="background:#ffb14e"></i>orbit / prime meridian</span><span><i class="swatch" style="background:#54d6dd"></i>equatorial plane</span><span>● spacecraft ball</span></div><span class="hint">Drag: rotate · right-drag: pan · wheel: zoom</span></section>
   </main><script type="module" src="./app.js"></script>

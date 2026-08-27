@@ -3,10 +3,15 @@ export const EARTH_MU_KM3_S2 = 398600.4418;
 export const EARTH_J2 = 1.08262668e-3;
 export const EARTH_OBLIQUITY_DEG = 23.4392911;
 export const DAY_SECONDS = 86400;
+export const EARTH_SIDEREAL_DAY_SECONDS = 86164.0905;
 export const TAU = Math.PI * 2;
 
 export const radians = degrees => degrees * Math.PI / 180;
 export const degrees = angle => angle * 180 / Math.PI;
+
+export function earthRotationCycles(elapsedDays, siderealDaySeconds = EARTH_SIDEREAL_DAY_SECONDS) {
+  return elapsedDays * DAY_SECONDS / siderealDaySeconds;
+}
 
 export function eclipticDirection(longitude, obliquity = radians(EARTH_OBLIQUITY_DEG)) {
   return [Math.cos(longitude), Math.sin(longitude) * Math.cos(obliquity), Math.sin(longitude) * Math.sin(obliquity)];
@@ -85,32 +90,96 @@ export function sunSynchronousInclination(a, e = 0, j2 = EARTH_J2) {
 }
 
 // Educational averaged model: drag lowers apogee first, then contracts a near-circle.
-export function propagateAveragedDrag(initial, options) {
-  let a = initial.a;
-  let e = initial.e;
-  let rp = a * (1 - e);
-  const elapsed = Math.max(0, options.days) * DAY_SECONDS;
-  const steps = Math.max(1, Math.ceil(options.days * 8));
-  const dt = elapsed / steps;
-  let reentered = false;
-  let lastDensity = options.rho400;
-  for (let k = 0; k < steps; k += 1) {
-    const hp = rp - EARTH_RADIUS_KM;
-    lastDensity = options.rho400 * Math.exp(-(hp - 400) / options.scaleHeightKm);
-    const aMetres = a * 1000;
+// Adaptive steps limit altitude loss, so very long lifetimes do not require day-sized loops.
+const DRAG_STEP_KM = .5;
+const REENTRY_ALTITUDE_KM = 80;
+const REENTRY_EPSILON_KM = 1e-4;
+const MAX_DECAY_DAYS = 10_000_000 * 365.25;
+
+function densityFunction(options) {
+  return options.densityAtAltitude ??
+    (altitudeKm => options.rho400 * Math.exp(-(altitudeKm - 400) / options.scaleHeightKm));
+}
+
+function dragState(initial, options) {
+  const rp = initial.a * (1 - initial.e);
+  const densityAtAltitude = densityFunction(options);
+  return {
+    a: initial.a, e: initial.e, rp, elapsed: 0, reentered: false, steps: 0,
+    densityAtAltitude, density: densityAtAltitude(rp - EARTH_RADIUS_KM)
+  };
+}
+
+function advanceDrag(state, targetSeconds, options) {
+  while (!state.reentered && state.elapsed < targetSeconds) {
+    const hp = state.rp - EARTH_RADIUS_KM;
+    state.density = state.densityAtAltitude(hp);
+    const aMetres = state.a * 1000;
     const muSI = EARTH_MU_KM3_S2 * 1e9;
-    const daMetres = -lastDensity * options.cd * options.areaToMass * Math.sqrt(muSI * aMetres) * dt;
-    const daKm = Math.max(daMetres / 1000, -Math.max(0, a - EARTH_RADIUS_KM - 80));
-    a += daKm;
-    if (e > 0.001) {
-      // Perigee is nearly unchanged by an impulse opposite velocity at perigee.
-      e = Math.max(0, 1 - rp / a);
-      if (e === 0) rp = a;
-    } else {
-      e = 0;
-      rp = a;
+    const daKmPerSecond = -state.density * options.cd * options.areaToMass * Math.sqrt(muSI * aMetres) / 1000;
+    const remainingDrop = Math.max(0, state.a - EARTH_RADIUS_KM - REENTRY_ALTITUDE_KM);
+    if (!(daKmPerSecond < 0) || remainingDrop <= REENTRY_EPSILON_KM) {
+      if (remainingDrop <= REENTRY_EPSILON_KM) state.a = EARTH_RADIUS_KM + REENTRY_ALTITUDE_KM;
+      state.reentered = remainingDrop <= REENTRY_EPSILON_KM;
+      state.elapsed = targetSeconds;
+      break;
     }
-    if (a - EARTH_RADIUS_KM <= 80) { reentered = true; break; }
+    const adaptiveSeconds = Math.min(DRAG_STEP_KM, remainingDrop) / -daKmPerSecond;
+    const dt = Math.min(targetSeconds - state.elapsed, adaptiveSeconds);
+    if (!(dt > 0) || !Number.isFinite(dt)) { state.elapsed = targetSeconds; break; }
+    state.a += Math.max(daKmPerSecond * dt, -remainingDrop);
+    state.elapsed += dt;
+    state.steps += 1;
+    if (state.e > .001) {
+      // Perigee is nearly unchanged by an impulse opposite velocity at perigee.
+      state.e = Math.max(0, 1 - state.rp / state.a);
+      if (state.e === 0) state.rp = state.a;
+    } else {
+      state.e = 0;
+      state.rp = state.a;
+    }
+    if (state.a - EARTH_RADIUS_KM <= REENTRY_ALTITUDE_KM + REENTRY_EPSILON_KM) {
+      state.a = EARTH_RADIUS_KM + REENTRY_ALTITUDE_KM;
+      state.reentered = true;
+    }
   }
-  return { a, e, density: lastDensity, reentered };
+  return state;
+}
+
+function dragResult(state) {
+  return { a: state.a, e: state.e, density: state.density, reentered: state.reentered, steps: state.steps };
+}
+
+export function propagateAveragedDrag(initial, options) {
+  const state = dragState(initial, options);
+  advanceDrag(state, Math.max(0, options.days) * DAY_SECONDS, options);
+  return dragResult(state);
+}
+
+export function estimateDecayDays(initial, options, maxDays = MAX_DECAY_DAYS) {
+  const state = dragState(initial, options);
+  advanceDrag(state, maxDays * DAY_SECONDS, options);
+  return state.reentered ? state.elapsed / DAY_SECONDS : Infinity;
+}
+
+export function sampleAveragedDrag(initial, options, days, sampleCount = 72) {
+  const state = dragState(initial, options);
+  const history = [];
+  const endSeconds = Math.max(0, days) * DAY_SECONDS;
+  for (let k = 0; k <= sampleCount; k += 1) {
+    const targetSeconds = endSeconds * k / sampleCount;
+    advanceDrag(state, targetSeconds, options);
+    history.push({ day: targetSeconds / DAY_SECONDS, altitude: state.a - EARTH_RADIUS_KM, e: state.e });
+  }
+  return history;
+}
+
+// A schematic trajectory for displaying many physical revolutions as a readable spiral.
+export function compressedDecaySpiral(elements, history, turns = 8) {
+  const denominator = Math.max(1, history.length - 1);
+  return history.map((point, index) => positionAtTrue({
+    ...elements,
+    a: EARTH_RADIUS_KM + point.altitude,
+    e: point.e
+  }, Math.PI + turns * TAU * index / denominator));
 }
