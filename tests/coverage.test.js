@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   bestGroundTrackRepeat,
+  constellationAccess,
   constellationMember,
   earthSurfaceFraction,
   elevationAngle,
@@ -45,4 +46,12 @@ test('constellation planes are evenly spaced in right ascension',()=>{
   assert.ok(Math.abs(second.elements.raan-first.elements.raan-TAU/3)<1e-12);
   assert.ok(Math.abs(third.elements.raan-second.elements.raan-TAU/3)<1e-12);
   assert.equal(constellationMember(elements,1,2,3).phase,Math.PI);
+});
+
+test('constellation access returns every satellite above the elevation mask',()=>{
+  const elements={a:EARTH_RADIUS_KM+600,e:0,i:0,raan:0,argp:0,meanAnomaly:0};
+  const access=constellationAccess(elements,4,1,0,{latitude:0,longitude:0},0);
+  assert.equal(access.visible,true);
+  assert.deepEqual(access.visibleSatellites.map(satellite=>satellite.index),[0]);
+  assert.ok(access.visibleSatellites.every(satellite=>satellite.elevation>=0));
 });

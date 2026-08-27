@@ -51,8 +51,8 @@ const controls=document.querySelector('#controls'),viewport=document.querySelect
 const orbitPreset=document.querySelector('#orbitPreset'),groundStation=document.querySelector('#groundStation');
 const view=createSpaceScene(viewport,{equatorialPlane:false});
 view.camera.position.set(3.2,-4.1,2.7);view.controls.target.set(0,0,0);
-const orbitLines=Array.from({length:6},(_,index)=>makeLine([],0xffb14e,index===0?.8:.35)),groundTrack=makeLine([],0x8bd99d,.9),contactLine=makeLine([],0xff766d,.9);
-view.scene.add(...orbitLines,groundTrack,contactLine);
+const orbitLines=Array.from({length:6},(_,index)=>makeLine([],0xffb14e,index===0?.8:.35)),groundTrack=makeLine([],0x8bd99d,.9),contactLines=Array.from({length:36},()=>makeLine([],0x8bd99d,.95));
+view.scene.add(...orbitLines,groundTrack,...contactLines);
 const stationDot=makeDot(0xff766d,.038);view.scene.add(stationDot);
 const stationLabel=attachLabel(viewport,view.camera,stationDot,'Tromsø ground station','red',[15,-15]);
 const satelliteDots=[],satelliteLabels=[],footprints=[];
@@ -148,7 +148,8 @@ function renderDynamic(now){
   const stationDirection=stationUnitVector(current.station.latitude,current.station.longitude,earthAngle);stationDot.position.set(...stationDirection.map(value=>value*1.035));stationLabel.setText(`${current.station.name} ground station`);
   const access=constellationAccess(current.elements,current.satellitesPerPlane,current.planeCount,simulationTime,current.station,current.minimumElevation,current.useJ2);
   stationDot.material.color.setHex(access.visible?0x8bd99d:0xff766d);
-  replaceLine(contactLine,access.visible?[stationDirection.map(value=>value*1.035),access.position.map(value=>value/EARTH_RADIUS_KM)]:[]);
+  const visibleByIndex=new Map(access.visibleSatellites.map(satellite=>[satellite.index,satellite.position]));
+  contactLines.forEach((line,index)=>{const position=visibleByIndex.get(index);replaceLine(line,position?[stationDirection.map(value=>value*1.035),position.map(value=>value/EARTH_RADIUS_KM)]:[])});
   const firstRadius=Math.hypot(...positions[0]),footprintAngle=visibilityCentralAngle(firstRadius,current.minimumElevation),area=sphericalCapAreaKm2(footprintAngle),fraction=earthSurfaceFraction(footprintAngle);
   if(!nextEvent||now-lastEventWall>1000){nextEvent=nextAccessEvent(current.elements,current.satellitesPerPlane,current.planeCount,simulationTime,current.station,current.minimumElevation,current.useJ2);lastEventWall=now}
   document.querySelector('#epoch').textContent=formatEpoch(simulationTime);

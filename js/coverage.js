@@ -108,14 +108,16 @@ export function constellationAccess(elements, satellitesPerPlane, planeCount, el
   const earthAngle = TAU * elapsedSeconds / EARTH_SIDEREAL_DAY_SECONDS;
   const stationDirection = stationUnitVector(station.latitude, station.longitude, earthAngle);
   let best = { elevation: -Math.PI / 2, index: 0, position: null };
+  const visibleSatellites = [];
   const satelliteCount = Math.max(1, Math.round(satellitesPerPlane)) * Math.max(1, Math.round(planeCount));
   for (let index = 0; index < satelliteCount; index += 1) {
     const member = constellationMember(elements, index, satellitesPerPlane, planeCount);
     const position = propagatedOrbitPosition(member.elements, elapsedSeconds, member.phase, useJ2);
     const elevation = elevationAngle(position, stationDirection);
+    if (elevation >= minimumElevation) visibleSatellites.push({ elevation, index, position, plane: member.plane, slot: member.slot });
     if (elevation > best.elevation) best = { elevation, index, position, plane: member.plane, slot: member.slot };
   }
-  return { ...best, visible: best.elevation >= minimumElevation, stationDirection };
+  return { ...best, visible: visibleSatellites.length > 0, visibleSatellites, stationDirection };
 }
 
 export function nextAccessEvent(elements, satellitesPerPlane, planeCount, elapsedSeconds, station, minimumElevation, useJ2 = false) {
