@@ -4,7 +4,6 @@ import {
   earthFixedDirection,
   earthSurfaceFraction,
   elevationAngle,
-  nextAccessEvent,
   propagatedOrbitPosition,
   rotateZ,
   sphericalCapAreaKm2,
@@ -48,6 +47,7 @@ const presets={
 
 const controls=document.querySelector('#controls'),viewport=document.querySelector('#viewport');
 const orbitPreset=document.querySelector('#orbitPreset'),groundStation=document.querySelector('#groundStation');
+const accessWorker=new Worker(new URL('./access-worker.js',import.meta.url),{type:'module'});
 const view=createSpaceScene(viewport,{equatorialPlane:false});
 view.camera.position.set(3.2,-4.1,2.7);view.controls.target.set(0,0,0);
 const orbitLines=Array.from({length:6},(_,index)=>makeLine([],0xffb14e,index===0?.8:.35)),groundTrack=makeLine([],0x8bd99d,.9),contactLines=Array.from({length:36},()=>{const line=makeLine([[0,0,0],[0,0,0]],0x8bd99d,.95);line.visible=false;line.frustumCulled=false;return line});
@@ -64,7 +64,13 @@ for(let index=0;index<36;index+=1){
 }
 
 let current=null,simulationTime=0,playing=true,lastFrame=performance.now(),applyingPreset=false,applyingStation=false;
-let repeatResult=null,nextEvent=null,lastEventSimulation=NaN,groundTrackFrame=0;
+let repeatResult=null,nextEvent=null,lastEventSimulation=NaN,accessRequestId=0,accessPending=false,accessWorkerFailed=false,groundTrackFrame=0;
+
+accessWorker.addEventListener('message',event=>{
+  if(event.data.id!==accessRequestId)return;
+  nextEvent=event.data.result;lastEventSimulation=event.data.requestedAt;accessPending=false;
+});
+accessWorker.addEventListener('error',()=>{accessPending=false;accessWorkerFailed=true});
 
 function setInput(id,value){document.querySelector(`#${id}`).value=String(value)}
 function setPreset(name,fit=true){
@@ -95,7 +101,7 @@ function updateConfiguration(values){
   orbitLines.forEach((line,index)=>{line.visible=index<current.planeCount;if(line.visible)replaceLine(line,scaled(sampleOrbit({...current.elements,raan:current.elements.raan+TAU*index/current.planeCount},360)))});
   satelliteDots.forEach((dot,index)=>{const active=index<count;dot.visible=active;footprints[index].visible=active});
   repeatResult=bestGroundTrackRepeat(current.elements,{useJ2:current.useJ2,maximumDays:30});
-  nextEvent=null;lastEventSimulation=NaN;updateOrbitDescription();updateGroundTrack();renderDynamic(performance.now());
+  accessRequestId+=1;accessPending=false;accessWorkerFailed=false;nextEvent=null;lastEventSimulation=NaN;updateOrbitDescription();updateGroundTrack();renderDynamic(performance.now());
 }
 const refresh=sliderBindings(controls,updateConfiguration);
 
@@ -104,7 +110,7 @@ document.querySelectorAll('[data-station]').forEach(input=>input.addEventListene
 orbitPreset.addEventListener('change',()=>setPreset(orbitPreset.value));
 groundStation.addEventListener('change',()=>selectStation(groundStation.value));
 document.querySelector('#play').addEventListener('click',event=>{playing=!playing;event.currentTarget.textContent=playing?'Pause':'Play';event.currentTarget.classList.toggle('accent',playing)});
-document.querySelector('#reset').addEventListener('click',()=>{simulationTime=0;nextEvent=null;lastEventSimulation=NaN;renderDynamic(performance.now())});
+document.querySelector('#reset').addEventListener('click',()=>{simulationTime=0;accessRequestId+=1;accessPending=false;nextEvent=null;lastEventSimulation=NaN;renderDynamic(performance.now())});
 
 function updateOrbitDescription(){
   const geometry=current.elements,perigee=geometry.a*(1-geometry.e)-EARTH_RADIUS_KM,apogee=geometry.a*(1+geometry.e)-EARTH_RADIUS_KM;
@@ -144,6 +150,10 @@ function longitudeShiftPerOrbit(){
   const period=periodSeconds(current.elements.a),start=earthFixedDirection(propagatedOrbitPosition(current.elements,0,0,current.useJ2),0),end=earthFixedDirection(propagatedOrbitPosition(current.elements,period,0,current.useJ2),period);
   let shift=degrees(Math.atan2(end[1],end[0])-Math.atan2(start[1],start[0]));shift=((shift+540)%360)-180;return shift;
 }
+function requestNextAccess(){
+  accessPending=true;accessWorkerFailed=false;const id=++accessRequestId,requestedAt=simulationTime;
+  accessWorker.postMessage({id,requestedAt,elements:current.elements,satellitesPerPlane:current.satellitesPerPlane,planeCount:current.planeCount,station:current.station,minimumElevation:current.minimumElevation,useJ2:current.useJ2});
+}
 function renderDynamic(now){
   if(!current)return;
   const earthAngle=TAU*simulationTime/EARTH_SIDEREAL_DAY_SECONDS;view.setEarthRotationAngle(earthAngle);
@@ -158,8 +168,9 @@ function renderDynamic(now){
   const stationPoint=stationDirection.map(value=>value*1.035);
   contactLines.forEach((line,index)=>{const position=visibleByIndex.get(index);updateContactLine(line,stationPoint,position?.map(value=>value/EARTH_RADIUS_KM))});
   const firstRadius=Math.hypot(...positions[0]),footprintAngle=visibilityCentralAngle(firstRadius,current.minimumElevation),area=sphericalCapAreaKm2(footprintAngle),fraction=earthSurfaceFraction(footprintAngle);
-  const period=periodSeconds(current.elements.a),eventPassed=nextEvent&&simulationTime>=nextEvent.elapsedSeconds,noEventStale=!nextEvent&&Number.isFinite(lastEventSimulation)&&simulationTime-lastEventSimulation>=period;
-  if(!Number.isFinite(lastEventSimulation)||eventPassed||noEventStale){nextEvent=nextAccessEvent(current.elements,current.satellitesPerPlane,current.planeCount,simulationTime,current.station,current.minimumElevation,current.useJ2);lastEventSimulation=simulationTime}
+  const period=periodSeconds(current.elements.a),eventPassed=nextEvent&&simulationTime>=nextEvent.elapsedSeconds,noEventStale=!nextEvent&&Number.isFinite(lastEventSimulation)&&simulationTime-lastEventSimulation>=Math.max(period,EARTH_SIDEREAL_DAY_SECONDS/4);
+  if(eventPassed)nextEvent=null;
+  if(!accessPending&&!accessWorkerFailed&&(!Number.isFinite(lastEventSimulation)||eventPassed||noEventStale))requestNextAccess();
   document.querySelector('#epoch').textContent=formatEpoch(simulationTime);
   document.querySelector('#period').textContent=period<7200?`${(period/60).toFixed(1)} min`:`${(period/3600).toFixed(2)} h`;
   document.querySelector('#totalSatellites').textContent=String(satelliteCount);
@@ -167,7 +178,7 @@ function renderDynamic(now){
   document.querySelector('#footprint').textContent=`${(area/1e6).toFixed(2)} M km² · ${(fraction*100).toFixed(1)}%`;
   const accessElement=document.querySelector('#access');accessElement.textContent=access.visible?`Visible · sat ${access.index+1}`:'No contact';accessElement.className=access.visible?'status-good':'status-bad';
   document.querySelector('#elevation').textContent=`${degrees(access.elevation).toFixed(1)}°`;
-  document.querySelector('#nextAccess').textContent=nextEvent?`${nextEvent.type} in ${formatDuration(Math.max(0,nextEvent.elapsedSeconds-simulationTime))}`:'No event ≤ 7 d';
+  document.querySelector('#nextAccess').textContent=nextEvent?`${nextEvent.type} in ${formatDuration(Math.max(0,nextEvent.elapsedSeconds-simulationTime))}`:accessPending?'Calculating…':accessWorkerFailed?'Unavailable':'No event ≤ 7 d';
   document.querySelector('#repeat').textContent=`${repeatResult.orbits} orbits / ${repeatResult.siderealDays.toFixed(3)} d · ${repeatResult.errorKm.toFixed(repeatResult.errorKm<10?1:0)} km`;
   const shift=longitudeShiftPerOrbit();document.querySelector('#shift').textContent=`${Math.abs(shift).toFixed(2)}° ${shift<0?'west':'east'}`;
 }
