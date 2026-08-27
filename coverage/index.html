@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Interactive orbit ground visibility and repeat-cycle demonstration.">
+  <title>Orbit visibility · Space Systems Engineering</title>
+  <link rel="stylesheet" href="../styles.css?v=20260827-3">
+  <script src="../js/mathjax.js"></script>
+  <script defer src="../js/qr.js"></script>
+  <script defer src="../js/feedback.js?v=20260825-4"></script>
+  <script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
+</head>
+<body class="demo-page">
+<header class="site-header"><a class="course-title" href="../"><span>Space Systems Engineering</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
+<main class="demo-shell">
+<aside class="controls" id="controls">
+  <a class="back" href="../">← All demonstrations</a>
+  <h1>Orbit visibility</h1>
+  <p class="lede">Compare orbit classes through moving ground coverage, station access, and Earth-fixed repeat cycles. Earth rotates at the physical sidereal rate.</p>
+  <section class="control-group">
+    <h2>Orbit family</h2>
+    <label class="select-row" for="orbitPreset">Mission orbit</label>
+    <select id="orbitPreset" class="axis-select"><option value="polar">LEO · polar</option><option value="sso" selected>LEO · sun-synchronous</option><option value="leo">LEO · arbitrary</option><option value="vleo">VLEO</option><option value="meo">MEO · navigation</option><option value="molniya">Molniya</option><option value="geo">GEO</option><option value="gto">GTO</option></select>
+    <p class="state-note" id="orbitDescription"></p>
+    <div class="slider-row"><div class="slider-head"><label for="altitude">Semi-major altitude</label><output data-output="altitude"></output></div><input id="altitude" data-orbit type="range" min="180" max="36000" step="1" value="600" data-unit="km"></div>
+    <div class="slider-row"><div class="slider-head"><label for="eccentricity">Eccentricity</label><output data-output="eccentricity"></output></div><input id="eccentricity" data-orbit type="range" min="0" max="0.75" step="0.01" value="0"></div>
+    <div class="slider-row"><div class="slider-head"><label for="inclination">Inclination</label><output data-output="inclination"></output></div><input id="inclination" data-orbit type="range" min="0" max="180" step="0.1" value="97.8" data-unit="°"></div>
+    <div class="slider-row"><div class="slider-head"><label for="argp">Argument of periapsis</label><output data-output="argp"></output></div><input id="argp" data-orbit type="range" min="0" max="360" step="1" value="0" data-unit="°"></div>
+    <div class="slider-row"><div class="slider-head"><label for="satelliteCount">Satellites · evenly phased</label><output data-output="satelliteCount"></output></div><input id="satelliteCount" data-orbit type="range" min="1" max="6" step="1" value="3"></div>
+  </section>
+  <section class="control-group">
+    <h2>Ground station</h2>
+    <label class="select-row" for="groundStation">Station</label>
+    <select id="groundStation" class="axis-select"><option value="tromso" selected>Tromsø · 69.65° N</option><option value="svalbard">Svalbard · 78.23° N</option><option value="quito">Quito · equator</option><option value="kennedy">Kennedy Space Center</option><option value="canberra">Canberra</option><option value="tokyo">Tokyo</option><option value="custom">Custom coordinates</option></select>
+    <div class="slider-row"><div class="slider-head"><label for="stationLatitude">Latitude</label><output data-output="stationLatitude"></output></div><input id="stationLatitude" data-station type="range" min="-90" max="90" step="0.1" value="69.65" data-unit="°"></div>
+    <div class="slider-row"><div class="slider-head"><label for="stationLongitude">Longitude · east</label><output data-output="stationLongitude"></output></div><input id="stationLongitude" data-station type="range" min="-180" max="180" step="0.1" value="18.96" data-unit="°"></div>
+    <div class="slider-row"><div class="slider-head"><label for="minimumElevation">Minimum elevation</label><output data-output="minimumElevation"></output></div><input id="minimumElevation" type="range" min="0" max="30" step="1" value="5" data-unit="°"></div>
+  </section>
+  <section class="control-group">
+    <h2>Motion</h2>
+    <div class="slider-row"><div class="slider-head"><label for="timeScale">Time scale</label><output data-output="timeScale"></output></div><input id="timeScale" type="range" min="1" max="10000" step="1" value="1200" data-unit="× real time"></div>
+    <div class="button-row"><button id="play" class="accent" type="button">Pause</button><button id="reset" type="button">Reset epoch</button></div>
+  </section>
+  <section class="control-group">
+    <h2>Visibility and repeat</h2>
+    <div class="readouts coverage-readouts"><div class="readout"><span>Epoch</span><strong id="epoch"></strong></div><div class="readout"><span>Orbital period</span><strong id="period"></strong></div><div class="readout"><span>Sat 1 altitude</span><strong id="currentAltitude"></strong></div><div class="readout"><span>Footprint · sat 1</span><strong id="footprint"></strong></div><div class="readout"><span>Station access</span><strong id="access"></strong></div><div class="readout"><span>Best elevation</span><strong id="elevation"></strong></div><div class="readout"><span>Next event</span><strong id="nextAccess"></strong></div><div class="readout"><span>Best repeat ≤30 d</span><strong id="repeat"></strong></div><div class="readout"><span>Shift per orbit</span><strong id="shift"></strong></div><div class="readout"><span>Earth rotation</span><strong>sidereal · 23 h 56 m</strong></div></div>
+    <p class="warning" id="warning"></p>
+  </section>
+  <section class="variable-key" aria-label="Variable definitions"><h2>Variables</h2><dl><dt>Footprint</dt><dd>instantaneous spherical-cap area above the selected elevation mask</dd><dt>Repeat</dt><dd>closest return of satellite 1 to the same Earth-fixed ground track within 30 sidereal days</dd><dt>\(a\)</dt><dd>orbital semi-major axis measured from Earth’s centre</dd><dt>\(e\)</dt><dd>orbital eccentricity</dd><dt>\(i\)</dt><dd>inclination to Earth’s equator</dd><dt>\(\varepsilon\)</dt><dd>ground-station minimum elevation</dd><dt>\(\psi\)</dt><dd>coverage footprint central angle</dd></dl></section>
+  <section class="variable-key" aria-label="References"><h2>References</h2><ol class="reference-list"><li><a href="https://microcosmpress.com/">Vallado, <em>Fundamentals of Astrodynamics and Applications</em>, 5th ed.</a> — Earth-fixed frames, ground tracks, and satellite visibility.</li><li><a href="https://astrobooks.com/spacemissionengineeringthenewsmadsme-smadwertzeverettpuschellavailablespring2011softcover.aspx">Wertz, Everett and Puschell, <em>Space Mission Engineering: The New SMAD</em></a> — orbit selection, coverage, access, and revisit geometry.</li></ol></section>
+</aside>
+<section class="viewport" id="viewport" aria-label="Animated orbit coverage globe"><div class="legend"><span><i class="swatch" style="background:#ffb14e"></i>orbit and satellites</span><span><i class="swatch" style="background:#54d6dd"></i>instantaneous coverage footprints</span><span><i class="swatch" style="background:#8bd99d"></i>one-orbit Earth-fixed ground track</span><span><i class="swatch" style="background:#ff766d"></i>selected ground station</span></div><span class="hint">Drag: rotate · right-drag: pan · wheel: zoom</span></section>
+</main>
+<script type="module" src="./app.js?v=20260827-2"></script>
+</body>
+</html>

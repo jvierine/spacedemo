@@ -31,7 +31,7 @@
 
 ## Next demonstrations
 
-- [ ] Ground tracks with Earth rotation and repeat-orbit resonances.
+- [x] Ground tracks with Earth rotation, station visibility, coverage footprints, and repeat cycles.
 - [ ] Orbit transfers: Hohmann, bi-elliptic, and plane changes.
 - [ ] Third-body perturbations from the Moon and Sun.
 - [ ] Solar-radiation pressure and eclipse seasons.
