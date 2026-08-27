@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Interactive Lambert transfer demonstration with comet intercept and Earth–Mars Hohmann examples.">
+  <title>Lambert problem · Space Systems Engineering</title>
+  <link rel="stylesheet" href="../styles.css?v=20260827-5">
+  <script src="../js/mathjax.js"></script>
+  <script defer src="../js/qr.js"></script>
+  <script defer src="../js/feedback.js?v=20260825-4"></script>
+  <script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
+</head>
+<body class="demo-page">
+<header class="site-header"><a class="course-title" href="../"><span>Space Systems Engineering</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
+<main class="demo-shell">
+<aside class="controls" id="controls">
+  <a class="back" href="../">← All demonstrations</a>
+  <h1>Lambert problem</h1>
+  <p class="lede">Choose two positions and a flight time. Lambert’s problem finds the departure and arrival velocities that connect them with a Keplerian orbit.</p>
+  <p class="equation">\((\mathbf r_1,\mathbf r_2,\Delta t)\longrightarrow(\mathbf v_1,\mathbf v_2)\)</p>
+  <section class="control-group">
+    <h2>Example</h2>
+    <label class="select-row" for="scenario">Transfer</label>
+    <select id="scenario" class="axis-select"><option value="comet" selected>Comet intercept · exercise</option><option value="mars">Earth–Mars · Hohmann transfer</option></select>
+    <p class="state-note" id="scenarioNote"></p>
+  </section>
+  <section class="control-group" id="cometControls">
+    <h2>Comet intercept</h2>
+    <div class="slider-row"><div class="slider-head"><label for="leadTime">Intercept before Earth impact</label><output id="leadTimeOutput"></output></div><input id="leadTime" type="range" min="5" max="365" step="1" value="40"></div>
+    <div class="preset-row lambert-presets" aria-label="Exercise intercept presets"><button type="button" data-lead="5">5 d</button><button type="button" data-lead="10">10 d</button><button type="button" data-lead="20">20 d</button><button type="button" data-lead="40">40 d</button><button type="button" data-lead="365">365 d</button></div>
+    <div class="slider-row"><div class="slider-head"><label for="launchDay">Launch day after discovery</label><output id="launchDayOutput"></output></div><input id="launchDay" type="range" min="0" max="2120" step="1" value="1750"></div>
+    <p class="control-note">The impact is day 2200. The buttons reproduce the five exercise cases; the continuous control exposes the complete launch window.</p>
+  </section>
+  <section class="control-group" id="marsControls" hidden>
+    <h2>Earth–Mars transfer</h2>
+    <div class="slider-row"><div class="slider-head"><label for="marsDeparture">Departure day</label><output id="marsDepartureOutput"></output></div><input id="marsDeparture" type="range" min="0" max="4000" step="1" value="684"></div>
+    <div class="slider-row"><div class="slider-head"><label for="marsTravel">Travel time</label><output id="marsTravelOutput"></output></div><input id="marsTravel" type="range" min="30" max="500" step="1" value="259"></div>
+    <button id="hohmannPreset" class="accent" type="button">Hohmann minimum-energy point</button>
+    <p class="control-note">The circular coplanar model repeats its Earth–Mars launch geometry about every 780 days. Click the pork-chop diagram to search departure day and flight time.</p>
+  </section>
+  <section class="control-group">
+    <h2>Motion</h2>
+    <div class="slider-row"><div class="slider-head"><label for="progress">Journey progress</label><output id="progressOutput"></output></div><input id="progress" type="range" min="0" max="1000" step="1" value="0"></div>
+    <div class="button-row"><button id="play" class="accent" type="button">Play</button><button id="reset" type="button">Reset</button></div>
+  </section>
+  <section class="control-group">
+    <h2>Transfer solution</h2>
+    <div class="readouts"><div class="readout"><span>Departure</span><strong id="departure"></strong></div><div class="readout"><span>Arrival</span><strong id="arrival"></strong></div><div class="readout"><span>Time of flight</span><strong id="flightTime"></strong></div><div class="readout"><span>Departure v∞</span><strong id="departureVInfinity"></strong></div><div class="readout"><span>C₃</span><strong id="c3"></strong></div><div class="readout"><span>Arrival v∞</span><strong id="arrivalVInfinity"></strong></div></div>
+    <p class="warning" id="warning"></p>
+  </section>
+  <section class="control-group">
+    <h2>Equations</h2>
+    <p class="equation">\(\ddot{\mathbf r}+\dfrac{GM}{r^2}\dfrac{\mathbf r}{r}=0\)</p>
+    <p class="equation">\(\mathbf r(t_1)=\mathbf r_1,\qquad \mathbf r(t_2)=\mathbf r_2\)</p>
+    <p class="equation">\(C_3=\lVert\mathbf v_1-\mathbf v_\oplus\rVert^2=v_\infty^2\)</p>
+    <p class="equation" id="scenarioEquation"></p>
+  </section>
+  <section class="variable-key" aria-label="Variable definitions"><h2>Variables</h2><dl><dt>\(\mathbf r_1\)</dt><dd>heliocentric departure position</dd><dt>\(\mathbf r_2\)</dt><dd>heliocentric arrival position</dd><dt>\(\Delta t\)</dt><dd>time of flight</dd><dt>\(\mathbf v_1\)</dt><dd>required heliocentric departure velocity</dd><dt>\(\mathbf v_2\)</dt><dd>required heliocentric arrival velocity</dd><dt>\(v_\infty\)</dt><dd>velocity relative to the departure or arrival body outside its sphere of influence</dd><dt>\(C_3\)</dt><dd>characteristic energy at departure</dd></dl></section>
+  <section class="variable-key" aria-label="Model assumptions"><h2>Model</h2><p class="control-note">The Sun, spacecraft, and comet use two-body propagation. Earth and Mars follow circular coplanar orbits. The comet’s day-2200 position is placed at the modeled Earth and its exercise velocity is used exactly; planetary ephemerides and planetary gravity are omitted.</p></section>
+  <section class="variable-key" aria-label="References"><h2>References</h2><ol class="reference-list"><li><a href="https://www.esa.int/gsp/ACT/doc/MAD/pub/ACT-RPR-MAD-2014-RevisitingLambertProblem.pdf">Izzo, “Revisiting Lambert’s problem,” <em>Celestial Mechanics and Dynamical Astronomy</em> 121 (2015)</a> — modern derivation and solution structure.</li><li><a href="https://store.doverpublications.com/products/9780486497044">Bate, Mueller and White, <em>Fundamentals of Astrodynamics</em></a> — textbook treatment of Lambert’s problem and interplanetary transfers.</li></ol></section>
+</aside>
+<section class="lambert-workspace">
+  <div class="viewport lambert-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Animated heliocentric transfer geometry"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>Earth</span><span><i class="swatch" style="background:#ff766d"></i>target</span><span><i class="swatch" style="background:#ffb14e"></i>Lambert transfer</span></div><span class="hint">Heliocentric ecliptic view · distances in AU</span></div>
+  <figure class="porkchop-panel" id="porkchopPanel"><figcaption><strong id="porkchopTitle">Comet pork-chop diagram</strong><span id="porkchopCaption">Departure day × arrival day · color: Earth-departure \(v_\infty\), 4–70 km/s (clipped). Click to choose.</span></figcaption><canvas id="porkchopCanvas" aria-label="Interactive pork-chop diagram"></canvas></figure>
+</section>
+</main>
+<script type="module" src="./app.js?v=20260827-12"></script>
+</body>
+</html>

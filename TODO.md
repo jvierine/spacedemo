@@ -32,6 +32,7 @@
 ## Next demonstrations
 
 - [x] Ground tracks with Earth rotation, station visibility, coverage footprints, and repeat cycles.
+- [x] Lambert problem targeting with comet-intercept and Earth–Mars Hohmann examples.
 - [ ] Orbit transfers: Hohmann, bi-elliptic, and plane changes.
 - [ ] Third-body perturbations from the Moon and Sun.
 - [ ] Solar-radiation pressure and eclipse seasons.
