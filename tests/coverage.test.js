@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   bestGroundTrackRepeat,
+  constellationMember,
   earthSurfaceFraction,
   elevationAngle,
   sphericalCapAreaKm2,
@@ -36,4 +37,12 @@ test('geostationary orbit closes after one sidereal day',()=>{
   assert.equal(repeat.orbits,1);
   assert.ok(repeat.errorKm<1e-6);
   assert.ok(Math.abs(repeat.siderealDays-1)<1e-12);
+});
+
+test('constellation planes are evenly spaced in right ascension',()=>{
+  const elements={a:EARTH_RADIUS_KM+600,e:0,i:Math.PI/3,raan:.2,argp:0};
+  const first=constellationMember(elements,0,2,3),second=constellationMember(elements,2,2,3),third=constellationMember(elements,4,2,3);
+  assert.ok(Math.abs(second.elements.raan-first.elements.raan-TAU/3)<1e-12);
+  assert.ok(Math.abs(third.elements.raan-second.elements.raan-TAU/3)<1e-12);
+  assert.equal(constellationMember(elements,1,2,3).phase,Math.PI);
 });

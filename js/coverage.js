@@ -69,6 +69,19 @@ export function earthFixedDirection(positionKm, elapsedSeconds) {
   return rotateZ(unitVector(positionKm), -TAU * elapsedSeconds / EARTH_SIDEREAL_DAY_SECONDS);
 }
 
+export function constellationMember(elements, index, satellitesPerPlane, planeCount) {
+  const planes = Math.max(1, Math.round(planeCount));
+  const perPlane = Math.max(1, Math.round(satellitesPerPlane));
+  const plane = Math.floor(index / perPlane);
+  const slot = index % perPlane;
+  return {
+    elements: { ...elements, raan: (elements.raan ?? 0) + TAU * plane / planes },
+    phase: TAU * slot / perPlane,
+    plane,
+    slot
+  };
+}
+
 export function bestGroundTrackRepeat(elements, options = {}) {
   const period = periodSeconds(elements.a);
   const maximumDays = options.maximumDays ?? 30;
@@ -91,34 +104,35 @@ export function bestGroundTrackRepeat(elements, options = {}) {
   return best;
 }
 
-export function constellationAccess(elements, satelliteCount, elapsedSeconds, station, minimumElevation, useJ2 = false) {
+export function constellationAccess(elements, satellitesPerPlane, planeCount, elapsedSeconds, station, minimumElevation, useJ2 = false) {
   const earthAngle = TAU * elapsedSeconds / EARTH_SIDEREAL_DAY_SECONDS;
   const stationDirection = stationUnitVector(station.latitude, station.longitude, earthAngle);
   let best = { elevation: -Math.PI / 2, index: 0, position: null };
+  const satelliteCount = Math.max(1, Math.round(satellitesPerPlane)) * Math.max(1, Math.round(planeCount));
   for (let index = 0; index < satelliteCount; index += 1) {
-    const phase = TAU * index / satelliteCount;
-    const position = propagatedOrbitPosition(elements, elapsedSeconds, phase, useJ2);
+    const member = constellationMember(elements, index, satellitesPerPlane, planeCount);
+    const position = propagatedOrbitPosition(member.elements, elapsedSeconds, member.phase, useJ2);
     const elevation = elevationAngle(position, stationDirection);
-    if (elevation > best.elevation) best = { elevation, index, position };
+    if (elevation > best.elevation) best = { elevation, index, position, plane: member.plane, slot: member.slot };
   }
   return { ...best, visible: best.elevation >= minimumElevation, stationDirection };
 }
 
-export function nextAccessEvent(elements, satelliteCount, elapsedSeconds, station, minimumElevation, useJ2 = false) {
+export function nextAccessEvent(elements, satellitesPerPlane, planeCount, elapsedSeconds, station, minimumElevation, useJ2 = false) {
   const period = periodSeconds(elements.a);
-  const start = constellationAccess(elements, satelliteCount, elapsedSeconds, station, minimumElevation, useJ2);
+  const start = constellationAccess(elements, satellitesPerPlane, planeCount, elapsedSeconds, station, minimumElevation, useJ2);
   const targetVisible = !start.visible;
   const step = Math.max(5, Math.min(120, period / 240));
   const horizon = Math.min(7 * EARTH_SIDEREAL_DAY_SECONDS, Math.max(2 * EARTH_SIDEREAL_DAY_SECONDS, period * 3));
   let previousTime = elapsedSeconds;
   for (let offset = step; offset <= horizon; offset += step) {
     const time = elapsedSeconds + offset;
-    const state = constellationAccess(elements, satelliteCount, time, station, minimumElevation, useJ2);
+    const state = constellationAccess(elements, satellitesPerPlane, planeCount, time, station, minimumElevation, useJ2);
     if (state.visible === targetVisible) {
       let lower = previousTime, upper = time;
       for (let iteration = 0; iteration < 18; iteration += 1) {
         const middle = (lower + upper) / 2;
-        const middleVisible = constellationAccess(elements, satelliteCount, middle, station, minimumElevation, useJ2).visible;
+        const middleVisible = constellationAccess(elements, satellitesPerPlane, planeCount, middle, station, minimumElevation, useJ2).visible;
         if (middleVisible === start.visible) lower = middle;
         else upper = middle;
       }

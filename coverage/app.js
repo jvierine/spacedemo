@@ -1,6 +1,7 @@
 import {
   bestGroundTrackRepeat,
   constellationAccess,
+  constellationMember,
   earthFixedDirection,
   earthSurfaceFraction,
   nextAccessEvent,
@@ -36,29 +37,29 @@ const siderealGeoAltitude=Math.cbrt(EARTH_MU_KM3_S2*(EARTH_SIDEREAL_DAY_SECONDS/
 const navigationAltitude=Math.cbrt(EARTH_MU_KM3_S2*(EARTH_SIDEREAL_DAY_SECONDS/(2*TAU))**2)-EARTH_RADIUS_KM;
 const gtoPerigee=EARTH_RADIUS_KM+200,gtoApogee=EARTH_RADIUS_KM+siderealGeoAltitude;
 const presets={
-  polar:{name:'Polar LEO',altitude:550,eccentricity:0,inclination:90,argp:0,satelliteCount:3},
-  sso:{name:'Sun-synchronous LEO',altitude:600,eccentricity:0,inclination:degrees(sunSynchronousInclination(EARTH_RADIUS_KM+600)),argp:0,satelliteCount:3,useJ2:true},
-  leo:{name:'Arbitrary LEO',altitude:500,eccentricity:0,inclination:45,argp:0,satelliteCount:3},
-  vleo:{name:'VLEO',altitude:250,eccentricity:0,inclination:51.6,argp:0,satelliteCount:3},
-  meo:{name:'Navigation MEO',altitude:navigationAltitude,eccentricity:0,inclination:55,argp:0,satelliteCount:6},
-  molniya:{name:'Molniya',altitude:20200,eccentricity:.74,inclination:63.4,argp:270,satelliteCount:3,useJ2:true},
-  geo:{name:'Geostationary orbit',altitude:siderealGeoAltitude,eccentricity:0,inclination:0,argp:0,satelliteCount:3},
-  gto:{name:'Geostationary transfer orbit',altitude:(gtoPerigee+gtoApogee)/2-EARTH_RADIUS_KM,eccentricity:(gtoApogee-gtoPerigee)/(gtoApogee+gtoPerigee),inclination:28.5,argp:0,satelliteCount:1}
+  polar:{name:'Polar LEO',altitude:550,eccentricity:0,inclination:90,argp:0,planeCount:1,satelliteCount:3},
+  sso:{name:'Sun-synchronous LEO',altitude:600,eccentricity:0,inclination:degrees(sunSynchronousInclination(EARTH_RADIUS_KM+600)),argp:0,planeCount:1,satelliteCount:3,useJ2:true},
+  leo:{name:'Arbitrary LEO',altitude:500,eccentricity:0,inclination:45,argp:0,planeCount:1,satelliteCount:3},
+  vleo:{name:'VLEO',altitude:250,eccentricity:0,inclination:51.6,argp:0,planeCount:1,satelliteCount:3},
+  meo:{name:'Navigation MEO',altitude:navigationAltitude,eccentricity:0,inclination:55,argp:0,planeCount:3,satelliteCount:2},
+  molniya:{name:'Molniya',altitude:20200,eccentricity:.74,inclination:63.4,argp:270,planeCount:3,satelliteCount:1,useJ2:true},
+  geo:{name:'Geostationary orbit',altitude:siderealGeoAltitude,eccentricity:0,inclination:0,argp:0,planeCount:1,satelliteCount:3},
+  gto:{name:'Geostationary transfer orbit',altitude:(gtoPerigee+gtoApogee)/2-EARTH_RADIUS_KM,eccentricity:(gtoApogee-gtoPerigee)/(gtoApogee+gtoPerigee),inclination:28.5,argp:0,planeCount:1,satelliteCount:1}
 };
 
 const controls=document.querySelector('#controls'),viewport=document.querySelector('#viewport');
 const orbitPreset=document.querySelector('#orbitPreset'),groundStation=document.querySelector('#groundStation');
 const view=createSpaceScene(viewport,{equatorialPlane:false});
 view.camera.position.set(3.2,-4.1,2.7);view.controls.target.set(0,0,0);
-const orbitLine=makeLine([],0xffb14e,.8),groundTrack=makeLine([],0x8bd99d,.9),contactLine=makeLine([],0xff766d,.9);
-view.scene.add(orbitLine,groundTrack,contactLine);
+const orbitLines=Array.from({length:6},(_,index)=>makeLine([],0xffb14e,index===0?.8:.35)),groundTrack=makeLine([],0x8bd99d,.9),contactLine=makeLine([],0xff766d,.9);
+view.scene.add(...orbitLines,groundTrack,contactLine);
 const stationDot=makeDot(0xff766d,.038);view.scene.add(stationDot);
 const stationLabel=attachLabel(viewport,view.camera,stationDot,'Tromsø ground station','red',[15,-15]);
 const satelliteDots=[],satelliteLabels=[],footprints=[];
-for(let index=0;index<6;index+=1){
+for(let index=0;index<36;index+=1){
   const dot=makeDot(index===0?0xffffff:0xffb14e,index===0?.052:.035);view.scene.add(dot);satelliteDots.push(dot);
   satelliteLabels.push(index===0?attachLabel(viewport,view.camera,dot,'satellite 1','',[15,-15]):null);
-  const mesh=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:0x54d6dd,transparent:true,opacity:index===0?.16:.075,side:THREE.DoubleSide,depthWrite:false}));
+  const mesh=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:0x54d6dd,transparent:true,opacity:index===0?.16:.045,side:THREE.DoubleSide,depthWrite:false}));
   mesh.renderOrder=2;view.scene.add(mesh);footprints.push(mesh);
 }
 
@@ -69,7 +70,7 @@ function setInput(id,value){document.querySelector(`#${id}`).value=String(value)
 function setPreset(name,fit=true){
   const preset=presets[name];if(!preset)return;
   applyingPreset=true;
-  for(const key of ['altitude','eccentricity','inclination','argp','satelliteCount'])setInput(key,preset[key]);
+  for(const key of ['altitude','eccentricity','inclination','argp','planeCount','satelliteCount'])setInput(key,preset[key]);
   applyingPreset=false;refresh();if(fit)fitOrbit();
 }
 function selectStation(name){
@@ -85,13 +86,14 @@ function buildState(values){
   return {
     values,
     elements:{a:EARTH_RADIUS_KM+values.altitude,e:values.eccentricity,i:radians(values.inclination),raan:radians(18),argp:radians(values.argp),meanAnomaly:0},
-    count:Math.round(values.satelliteCount),station:currentStation(values),minimumElevation:radians(values.minimumElevation),useJ2:Boolean(preset?.useJ2)
+    satellitesPerPlane:Math.round(values.satelliteCount),planeCount:Math.round(values.planeCount),station:currentStation(values),minimumElevation:radians(values.minimumElevation),useJ2:Boolean(preset?.useJ2)
   };
 }
 function updateConfiguration(values){
   current=buildState(values);
-  replaceLine(orbitLine,scaled(sampleOrbit(current.elements,360)));
-  satelliteDots.forEach((dot,index)=>{const active=index<current.count;dot.visible=active;footprints[index].visible=active});
+  const count=current.satellitesPerPlane*current.planeCount;
+  orbitLines.forEach((line,index)=>{line.visible=index<current.planeCount;if(line.visible)replaceLine(line,scaled(sampleOrbit({...current.elements,raan:current.elements.raan+TAU*index/current.planeCount},360)))});
+  satelliteDots.forEach((dot,index)=>{const active=index<count;dot.visible=active;footprints[index].visible=active});
   repeatResult=bestGroundTrackRepeat(current.elements,{useJ2:current.useJ2,maximumDays:30});
   nextEvent=null;lastEventWall=0;updateOrbitDescription();updateGroundTrack();renderDynamic(performance.now());
 }
@@ -107,7 +109,7 @@ document.querySelector('#reset').addEventListener('click',()=>{simulationTime=0;
 function updateOrbitDescription(){
   const geometry=current.elements,perigee=geometry.a*(1-geometry.e)-EARTH_RADIUS_KM,apogee=geometry.a*(1+geometry.e)-EARTH_RADIUS_KM;
   const name=presets[orbitPreset.value]?.name??'Custom orbit';
-  document.querySelector('#orbitDescription').textContent=`${name} · perigee ${perigee.toFixed(0)} km · apogee ${apogee.toFixed(0)} km${current.useJ2?' · secular J₂ included':''}`;
+  document.querySelector('#orbitDescription').textContent=`${name} · perigee ${perigee.toFixed(0)} km · apogee ${apogee.toFixed(0)} km · ${current.planeCount} plane${current.planeCount===1?'':'s'}${current.useJ2?' · secular J₂ included':''}`;
   document.querySelector('#warning').textContent=perigee<120?'Perigee is below a sustainable orbit; atmospheric drag is not modeled here.':'';
 }
 function fitOrbit(){
@@ -141,15 +143,17 @@ function renderDynamic(now){
   if(!current)return;
   const earthAngle=TAU*simulationTime/EARTH_SIDEREAL_DAY_SECONDS;view.setEarthRotationAngle(earthAngle);
   const positions=[];
-  for(let index=0;index<current.count;index+=1){const position=propagatedOrbitPosition(current.elements,simulationTime,TAU*index/current.count,current.useJ2);positions.push(position);satelliteDots[index].position.set(...position.map(value=>value/EARTH_RADIUS_KM));updateFootprint(footprints[index],position)}
+  const satelliteCount=current.satellitesPerPlane*current.planeCount;
+  for(let index=0;index<satelliteCount;index+=1){const member=constellationMember(current.elements,index,current.satellitesPerPlane,current.planeCount),position=propagatedOrbitPosition(member.elements,simulationTime,member.phase,current.useJ2);positions.push(position);satelliteDots[index].position.set(...position.map(value=>value/EARTH_RADIUS_KM));updateFootprint(footprints[index],position)}
   const stationDirection=stationUnitVector(current.station.latitude,current.station.longitude,earthAngle);stationDot.position.set(...stationDirection.map(value=>value*1.035));stationLabel.setText(`${current.station.name} ground station`);
-  const access=constellationAccess(current.elements,current.count,simulationTime,current.station,current.minimumElevation,current.useJ2);
+  const access=constellationAccess(current.elements,current.satellitesPerPlane,current.planeCount,simulationTime,current.station,current.minimumElevation,current.useJ2);
   stationDot.material.color.setHex(access.visible?0x8bd99d:0xff766d);
   replaceLine(contactLine,access.visible?[stationDirection.map(value=>value*1.035),access.position.map(value=>value/EARTH_RADIUS_KM)]:[]);
   const firstRadius=Math.hypot(...positions[0]),footprintAngle=visibilityCentralAngle(firstRadius,current.minimumElevation),area=sphericalCapAreaKm2(footprintAngle),fraction=earthSurfaceFraction(footprintAngle);
-  if(!nextEvent||now-lastEventWall>1000){nextEvent=nextAccessEvent(current.elements,current.count,simulationTime,current.station,current.minimumElevation,current.useJ2);lastEventWall=now}
+  if(!nextEvent||now-lastEventWall>1000){nextEvent=nextAccessEvent(current.elements,current.satellitesPerPlane,current.planeCount,simulationTime,current.station,current.minimumElevation,current.useJ2);lastEventWall=now}
   document.querySelector('#epoch').textContent=formatEpoch(simulationTime);
   const period=periodSeconds(current.elements.a);document.querySelector('#period').textContent=period<7200?`${(period/60).toFixed(1)} min`:`${(period/3600).toFixed(2)} h`;
+  document.querySelector('#totalSatellites').textContent=String(satelliteCount);
   document.querySelector('#currentAltitude').textContent=`${(firstRadius-EARTH_RADIUS_KM).toFixed(0)} km`;
   document.querySelector('#footprint').textContent=`${(area/1e6).toFixed(2)} M km² · ${(fraction*100).toFixed(1)}%`;
   const accessElement=document.querySelector('#access');accessElement.textContent=access.visible?`Visible · sat ${access.index+1}`:'No contact';accessElement.className=access.visible?'status-good':'status-bad';
