@@ -11,21 +11,21 @@ function potentialColor(value){
   const position=Math.max(0,Math.min(1,value))*(potentialStops.length-1),index=Math.min(potentialStops.length-2,Math.floor(position)),mix=position-index,a=potentialStops[index],b=potentialStops[index+1];
   return `rgb(${Math.round(a[0]+(b[0]-a[0])*mix)} ${Math.round(a[1]+(b[1]-a[1])*mix)} ${Math.round(a[2]+(b[2]-a[2])*mix)})`;
 }
-function drawPotential({width,height,ratio,center,extent,angle}){
+function drawPotential({width,height,ratio,center,extent,angle,logScale}){
   const cell=Math.max(5,Math.round(7*ratio)),columns=Math.ceil(width/cell),rows=Math.ceil(height/cell),samples=[];
   for(let row=0;row<rows;row+=1)for(let column=0;column<columns;column+=1){
     const screenX=((column+.5)*cell-width/2)*2*extent/Math.min(width,height),screenY=(height/2-(row+.5)*cell)*2*extent/Math.min(width,height),relative=rotate([screenX,screenY],-angle),x=center[0]+relative[0]/AU_KM,y=center[1]+relative[1]/AU_KM;
     samples.push(effectivePotential(x,y,points.mu));
   }
-  const ordered=[...samples].sort((a,b)=>a-b),low=ordered[Math.floor(ordered.length*.03)],high=ordered[Math.floor(ordered.length*.97)],range=Math.max(Number.EPSILON,high-low);
-  samples.forEach((value,index)=>{const normalized=Math.log1p(9*Math.max(0,Math.min(1,(value-low)/range)))/Math.log(10);ctx.fillStyle=potentialColor(normalized);ctx.fillRect(index%columns*cell,Math.floor(index/columns)*cell,cell+1,cell+1)});
-  const barWidth=112*ratio,barHeight=7*ratio,barX=width-138*ratio,barY=24*ratio,gradient=ctx.createLinearGradient(barX,0,barX+barWidth,0);
-  potentialStops.forEach((stop,index)=>gradient.addColorStop(index/(potentialStops.length-1),`rgb(${stop.join(' ')})`));ctx.fillStyle='rgba(5,12,19,.76)';ctx.fillRect(barX-8*ratio,barY-17*ratio,barWidth+16*ratio,35*ratio);ctx.fillStyle=gradient;ctx.fillRect(barX,barY,barWidth,barHeight);ctx.fillStyle='#d8e3e7';ctx.font=`${9*ratio}px ui-monospace,monospace`;ctx.fillText('lower Ω',barX,barY-4*ratio);ctx.textAlign='right';ctx.fillText('higher Ω',barX+barWidth,barY-4*ratio);ctx.textAlign='left';
+  const mapped=logScale?samples.map(value=>Math.log10(value)):samples,ordered=[...mapped].sort((a,b)=>a-b),low=ordered[Math.floor(ordered.length*.03)],high=ordered[Math.floor(ordered.length*.97)],range=Math.max(Number.EPSILON,high-low);
+  mapped.forEach((value,index)=>{const normalized=Math.max(0,Math.min(1,(value-low)/range));ctx.fillStyle=potentialColor(normalized);ctx.fillRect(index%columns*cell,Math.floor(index/columns)*cell,cell+1,cell+1)});
+  const barWidth=132*ratio,barHeight=7*ratio,barX=width-158*ratio,barY=height-92*ratio,gradient=ctx.createLinearGradient(barX,0,barX+barWidth,0);
+  potentialStops.forEach((stop,index)=>gradient.addColorStop(index/(potentialStops.length-1),`rgb(${stop.join(' ')})`));ctx.fillStyle='rgba(5,12,19,.76)';ctx.fillRect(barX-8*ratio,barY-20*ratio,barWidth+16*ratio,46*ratio);ctx.fillStyle=gradient;ctx.fillRect(barX,barY,barWidth,barHeight);ctx.fillStyle='#d8e3e7';ctx.font=`${9*ratio}px ui-monospace,monospace`;ctx.textAlign='center';ctx.fillText(logScale?'log₁₀ Ω':'Ω · linear scale',barX+barWidth/2,barY-6*ratio);ctx.textAlign='left';ctx.fillText('lower',barX,barY+18*ratio);ctx.textAlign='right';ctx.fillText('higher',barX+barWidth,barY+18*ratio);ctx.textAlign='left';
 }
 function draw(){
   const {width,height,ratio}=sizeCanvas(),earthView=$('#viewScale').value==='earth',angle=Math.PI*2*elapsedDays/EARTH_YEAR_DAYS,extent=earthView?2.15e6:1.18*AU_KM,center=earthView?points.earth:[0,0],scale=Math.min(width,height)/(2*extent),project=raw=>{const relative=[raw[0]*AU_KM-center[0]*AU_KM,raw[1]*AU_KM-center[1]*AU_KM],rotated=rotate(relative,angle);return[width/2+rotated[0]*scale,height/2-rotated[1]*scale]};
   ctx.clearRect(0,0,width,height);
-  if($('#showPotential').checked)drawPotential({width,height,ratio,center,extent,angle});
+  if($('#showPotential').checked)drawPotential({width,height,ratio,center,extent,angle,logScale:!earthView});
   if(!earthView){const [sx,sy]=project(points.sun);ctx.strokeStyle='rgba(84,214,221,.28)';ctx.lineWidth=ratio;ctx.beginPath();ctx.arc(sx,sy,AU_KM*scale,0,Math.PI*2);ctx.stroke()}
   const earthPoint=project(points.earth),sunPoint=project(points.sun);
   const circle=(radius,color,dashed=false)=>{ctx.beginPath();ctx.arc(earthPoint[0],earthPoint[1],radius*scale,0,Math.PI*2);ctx.strokeStyle=color;ctx.lineWidth=1.6*ratio;ctx.setLineDash(dashed?[5*ratio,4*ratio]:[]);ctx.stroke();ctx.setLineDash([])};
