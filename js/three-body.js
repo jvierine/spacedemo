@@ -25,3 +25,7 @@ export function effectivePotential(x,y,mu=lagrangePoints().mu){
   const r1=Math.hypot(x+mu,y),r2=Math.hypot(x-(1-mu),y);
   return .5*(x*x+y*y)+(1-mu)/r1+mu/r2;
 }
+export function effectivePotentialGradient(x,y,mu=lagrangePoints().mu){
+  const dx1=x+mu,dx2=x-(1-mu),r1=Math.hypot(dx1,y),r2=Math.hypot(dx2,y);
+  return [x-(1-mu)*dx1/r1**3-mu*dx2/r2**3,y-(1-mu)*y/r1**3-mu*y/r2**3];
+}
