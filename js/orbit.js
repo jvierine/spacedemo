@@ -25,6 +25,11 @@ export function periodSeconds(aKm, mu = EARTH_MU_KM3_S2) {
   return TAU * Math.sqrt(aKm ** 3 / mu);
 }
 
+export function maximumEccentricityForRadius(aKm, minimumRadiusKm = EARTH_RADIUS_KM) {
+  if (!Number.isFinite(aKm) || !Number.isFinite(minimumRadiusKm) || !(aKm > 0) || !(minimumRadiusKm >= 0)) throw new RangeError('radii must be finite and non-negative');
+  return Math.max(0, Math.min(1 - Number.EPSILON, 1 - minimumRadiusKm / aKm));
+}
+
 export function solveKepler(meanAnomaly, eccentricity, iterations = 12) {
   let E = eccentricity < 0.8 ? meanAnomaly : Math.PI;
   for (let i = 0; i < iterations; i += 1) {

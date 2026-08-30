@@ -1,9 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import { compressedDecaySpiral, DAY_SECONDS, EARTH_J2, EARTH_MU_KM3_S2, EARTH_OBLIQUITY_DEG, EARTH_RADIUS_KM, degrees, earthRotationCycles, eclipticDirection, ellipseGeometry, estimateDecayDays, hasWellDefinedPeriapsis, j2Rates, periodSeconds, propagateAveragedDrag, radians, sampleAveragedDrag, sunSynchronousInclination, trueFromMean } from '../js/orbit.js';
+import { compressedDecaySpiral, DAY_SECONDS, EARTH_J2, EARTH_MU_KM3_S2, EARTH_OBLIQUITY_DEG, EARTH_RADIUS_KM, degrees, earthRotationCycles, eclipticDirection, ellipseGeometry, estimateDecayDays, hasWellDefinedPeriapsis, j2Rates, maximumEccentricityForRadius, periodSeconds, propagateAveragedDrag, radians, sampleAveragedDrag, sunSynchronousInclination, trueFromMean } from '../js/orbit.js';
 import { msisDensity } from '../js/msis-density.js';
 test('LEO period is physically plausible',()=>assert.ok(Math.abs(periodSeconds(EARTH_RADIUS_KM+400)/60-92.56)<.1));
 test('ellipse apses and axes are consistent',()=>{const g=ellipseGeometry(10000,.2);assert.equal(g.rp,8000);assert.equal(g.ra,12000);assert.ok(Math.abs(g.b-9797.95897)<1e-4)});
 test('Kepler conversion preserves periapsis',()=>assert.ok(Math.abs(trueFromMean(0,.7))<1e-12));
+test('eccentricity limit places periapsis on Earth surface',()=>{for(const altitude of [200,400,20000,100000]){const a=EARTH_RADIUS_KM+altitude,e=maximumEccentricityForRadius(a);assert.ok(Math.abs(a*(1-e)-EARTH_RADIUS_KM)<1e-9)}});
 test('ecliptic is tilted from the Earth equator by the physical obliquity',()=>{const solstice=eclipticDirection(Math.PI/2),latitude=degrees(Math.asin(solstice[2]));assert.ok(Math.abs(latitude-EARTH_OBLIQUITY_DEG)<1e-12);assert.ok(Math.abs(Math.hypot(...solstice)-1)<1e-12)});
 test('periapsis marker is suppressed when its direction is ill-conditioned',()=>{assert.equal(hasWellDefinedPeriapsis(.01),false);assert.equal(hasWellDefinedPeriapsis(.03),true);assert.equal(hasWellDefinedPeriapsis(.74),true)});
 test('prograde J2 node regresses',()=>{const r=j2Rates({a:EARTH_RADIUS_KM+700,e:0,i:radians(60)},EARTH_J2);assert.ok(r.raan<0)});

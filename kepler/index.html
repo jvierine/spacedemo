@@ -7,8 +7,8 @@
   <main class="demo-shell">
     <aside class="controls" id="controls"><a class="back" href="../">← All demonstrations</a><h1>Keplerian orbits</h1><p class="lede">The six elements describe the size, shape, plane, orientation, and current position of an ideal two-body orbit.</p>
       <section class="control-group"><h2>Size and shape</h2>
-        <div class="slider-row"><div class="slider-head"><label for="altitude">Semi-major altitude</label><output data-output="altitude"></output></div><input id="altitude" type="range" min="200" max="20000" step="10" value="400" data-unit="km"></div>
-        <div class="slider-row"><div class="slider-head"><label for="eccentricity">Eccentricity e</label><output data-output="eccentricity"></output></div><input id="eccentricity" type="range" min="0" max="0.9" step="0.01" value="0.03"></div>
+        <div class="slider-row"><div class="slider-head"><label for="altitude">Semi-major altitude</label><output data-output="altitude"></output></div><input id="altitude" type="range" min="200" max="100000" step="10" value="400" data-unit="km"></div>
+        <div class="slider-row"><div class="slider-head"><label for="eccentricity">Eccentricity e</label><output data-output="eccentricity"></output></div><input id="eccentricity" type="range" min="0" max="0.059" step="0.001" value="0.03" aria-describedby="eccentricityLimit"><p class="state-note" id="eccentricityLimit"></p></div>
       </section>
       <section class="control-group"><h2>Orientation</h2>
         <div class="slider-row"><div class="slider-head"><label for="inclination">Inclination i</label><output data-output="inclination"></output></div><input id="inclination" type="range" min="0" max="180" step="1" value="52" data-unit="°"></div>
@@ -25,5 +25,5 @@
       <section class="variable-key" aria-label="Variable definitions"><h2>Variables</h2><dl><dt>\(T\)</dt><dd>orbital period</dd><dt>\(a\)</dt><dd>orbital semi-major axis</dd><dt>\(b\)</dt><dd>orbital semi-minor axis</dd><dt>\(e\)</dt><dd>orbital eccentricity</dd><dt>\(i\)</dt><dd>inclination to Earth’s equator</dd><dt>\(\Omega\)</dt><dd>right ascension of the ascending node</dd><dt>\(\omega\)</dt><dd>argument of periapsis</dd><dt>\(M\)</dt><dd>mean anomaly</dd><dt>\(\nu\)</dt><dd>true anomaly</dd><dt>\(r\)</dt><dd>distance from Earth’s centre</dd><dt>\(\mu_E\)</dt><dd>Earth’s standard gravitational parameter</dd><dt>\(\omega_E\)</dt><dd>Earth’s sidereal angular rotation rate</dd></dl></section>
     </aside>
     <section class="viewport" id="viewport" aria-label="Interactive 3D orbit"><div class="legend"><span><i class="swatch" style="background:#ffb14e"></i>orbit / prime meridian</span><span><i class="swatch" style="background:#54d6dd"></i>equatorial plane</span><span>● spacecraft ball</span></div><span class="hint">Drag: rotate · right-drag: pan · wheel: zoom</span></section>
-  </main><script type="module" src="./app.js"></script>
+  </main><script type="module" src="./app.js?v=20260830-1"></script>
 </body></html>

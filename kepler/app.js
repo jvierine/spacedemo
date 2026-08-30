@@ -1,8 +1,10 @@
-import { EARTH_RADIUS_KM, ellipseGeometry, periodSeconds, positionAtTrue, radians, sampleOrbit, trueFromMean } from '../js/orbit.js';
+import { EARTH_RADIUS_KM, ellipseGeometry, maximumEccentricityForRadius, periodSeconds, positionAtTrue, radians, sampleOrbit, trueFromMean } from '../js/orbit.js?v=20260830-1';
 import { attachLabel, createSpaceScene, makeDot, makeLine, replaceLine, scaled, setPosition, sliderBindings } from '../js/scene.js';
 
 const viewport = document.querySelector('#viewport');
+const altitudeInput=document.querySelector('#altitude'),eccentricityInput=document.querySelector('#eccentricity'),eccentricityLimit=document.querySelector('#eccentricityLimit');
 const view = createSpaceScene(viewport);
+view.controls.maxDistance=80;
 const orbit = makeLine([], 0xffb14e, 1); view.scene.add(orbit);
 const major = makeLine([], 0x8bd99d, .75, true); view.scene.add(major);
 const minor = makeLine([], 0x8bd99d, .45, true); view.scene.add(minor);
@@ -19,6 +21,18 @@ const inclinationAnchor=makeDot(0x54d6dd,.012);view.scene.add(inclinationAnchor)
 const inclinationLabel=attachLabel(viewport,view.camera,inclinationAnchor,'inclination i','cyan',[16,-14]);
 const labels = [inclinationLabel, attachLabel(viewport, view.camera, craft, 'spacecraft ball','',[16,-16]), attachLabel(viewport, view.camera, peri, 'periapsis', 'red',[14,14]), attachLabel(viewport, view.camera, apo, 'apoapsis', 'cyan',[-14,14]), attachLabel(viewport, view.camera, centre, 'focus offset ae', 'green',[16,-14]), attachLabel(viewport, view.camera, aAnchor, 'semi-major axis a', 'green',[14,-14]), attachLabel(viewport, view.camera, bAnchor, 'semi-minor axis b', 'green',[14,-14]),attachLabel(viewport,view.camera,northPole,'N · North pole','',[12,-14]),attachLabel(viewport,view.camera,axisAnchor,'Earth rotation axis · +Z','',[18,-12])];
 let angleEquationVersion=0;
+
+function synchronizeEccentricityLimit(){
+  const a=EARTH_RADIUS_KM+Number(altitudeInput.value);
+  const physicalMaximum=maximumEccentricityForRadius(a);
+  const sliderMaximum=Math.floor(physicalMaximum*1000)/1000;
+  eccentricityInput.max=sliderMaximum.toFixed(3);
+  if(Number(eccentricityInput.value)>sliderMaximum)eccentricityInput.value=sliderMaximum.toFixed(3);
+  eccentricityLimit.textContent=`For this semi-major axis, e ≤ ${sliderMaximum.toFixed(3)} keeps perigee at or above Earth’s surface.`;
+}
+altitudeInput.addEventListener('input',synchronizeEccentricityLimit);
+eccentricityInput.addEventListener('input',synchronizeEccentricityLimit);
+synchronizeEccentricityLimit();
 
 function updateAngleEquation(v) {
   const element=document.querySelector('#angleEquation'),version=++angleEquationVersion;
@@ -56,7 +70,7 @@ function update(v) {
   document.querySelector('#minor').textContent = `${geometry.b.toFixed(0)} km`;
   document.querySelector('#perigee').textContent = `${(geometry.rp-EARTH_RADIUS_KM).toFixed(0)} km`;
   document.querySelector('#apogee').textContent = `${(geometry.ra-EARTH_RADIUS_KM).toFixed(0)} km`;
-  document.querySelector('#warning').textContent = geometry.rp < EARTH_RADIUS_KM ? 'The selected ellipse intersects Earth.' : '';
+  document.querySelector('#warning').textContent = '';
 }
 sliderBindings(document.querySelector('#controls'), update);
 function animate(){ requestAnimationFrame(animate); labels.forEach(l=>l.update()); view.render(); } animate();
