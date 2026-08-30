@@ -59,7 +59,7 @@ const satelliteDots=[],satelliteLabels=[],footprints=[];
 for(let index=0;index<36;index+=1){
   const dot=makeDot(index===0?0xffffff:0xffb14e,index===0?.052:.035);view.scene.add(dot);satelliteDots.push(dot);
   satelliteLabels.push(index===0?attachLabel(viewport,view.camera,dot,'satellite 1','',[15,-15]):null);
-  const mesh=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:0x54d6dd,transparent:true,opacity:index===0?.16:.045,side:THREE.DoubleSide,depthWrite:false}));
+  const mesh=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:0x54d6dd,transparent:true,opacity:index===0?.16:.12,side:THREE.DoubleSide,depthWrite:false}));
   mesh.renderOrder=2;view.scene.add(mesh);footprints.push(mesh);
 }
 

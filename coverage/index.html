@@ -17,7 +17,7 @@
 <aside class="controls" id="controls">
   <a class="back" href="../">← All demonstrations</a>
   <h1>Orbit visibility</h1>
-  <p class="lede">Compare orbit classes through moving ground coverage, station access, and Earth-fixed repeat cycles. Earth rotates at the physical sidereal rate.</p>
+  <p class="lede">Compare orbit classes through moving ground coverage, station access, and Earth-fixed repeat cycles. Every satellite’s instantaneous footprint is shown; the white satellite is the reference for the ground track and repeat readouts. Earth rotates at the physical sidereal rate.</p>
   <section class="control-group">
     <h2>Orbit family</h2>
     <label class="select-row" for="orbitPreset">Mission orbit</label>
@@ -51,8 +51,8 @@
   <section class="variable-key" aria-label="Variable definitions"><h2>Variables</h2><dl><dt>Planes</dt><dd>orbit planes sharing the selected inclination and evenly spaced in right ascension</dd><dt>Footprint</dt><dd>instantaneous spherical-cap area above the selected elevation mask</dd><dt>Repeat</dt><dd>closest return of satellite 1 to the same Earth-fixed ground track within 30 sidereal days</dd><dt>\(a\)</dt><dd>orbital semi-major axis measured from Earth’s centre</dd><dt>\(e\)</dt><dd>orbital eccentricity</dd><dt>\(i\)</dt><dd>inclination to Earth’s equator</dd><dt>\(\varepsilon\)</dt><dd>ground-station minimum elevation</dd><dt>\(\psi\)</dt><dd>coverage footprint central angle</dd></dl></section>
   <section class="variable-key" aria-label="References"><h2>References</h2><ol class="reference-list"><li><a href="https://microcosmpress.com/">Vallado, <em>Fundamentals of Astrodynamics and Applications</em>, 5th ed.</a> — Earth-fixed frames, ground tracks, and satellite visibility.</li><li><a href="https://astrobooks.com/spacemissionengineeringthenewsmadsme-smadwertzeverettpuschellavailablespring2011softcover.aspx">Wertz, Everett and Puschell, <em>Space Mission Engineering: The New SMAD</em></a> — orbit selection, coverage, access, and revisit geometry.</li><li><a href="https://www.spaceforce.mil/About-Us/Fact-Sheets/Fact-Sheet-Display/Article/2197765/global-positioning-system/">U.S. Space Force, “Global Positioning System”</a> — nominal GPS architecture of six orbital planes with at least four satellites per plane.</li></ol></section>
 </aside>
-<section class="viewport" id="viewport" aria-label="Animated orbit coverage globe"><div class="legend"><span><i class="swatch" style="background:#ffb14e"></i>orbit and satellites</span><span><i class="swatch" style="background:#54d6dd"></i>instantaneous coverage footprints</span><span><i class="swatch" style="background:#8bd99d"></i>ground track and visible links</span><span><i class="swatch" style="background:#ff766d"></i>ground station · no contact</span></div><span class="hint">Drag: rotate · right-drag: pan · wheel: zoom</span></section>
+<section class="viewport" id="viewport" aria-label="Animated orbit coverage globe"><div class="legend"><span><i class="swatch" style="background:#ffb14e"></i>orbit and satellites · white = reference</span><span><i class="swatch" style="background:#54d6dd"></i>each satellite’s coverage footprint</span><span><i class="swatch" style="background:#8bd99d"></i>ground track and visible links</span><span><i class="swatch" style="background:#ff766d"></i>ground station · no contact</span></div><span class="hint">Drag: rotate · right-drag: pan · wheel: zoom</span></section>
 </main>
-<script type="module" src="./app.js?v=20260827-7"></script>
+<script type="module" src="./app.js?v=20260830-1"></script>
 </body>
 </html>
