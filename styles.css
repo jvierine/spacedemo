@@ -62,6 +62,12 @@ h1 { margin: 8px 0 14px; font: 500 clamp(2.6rem, 7vw, 5.7rem)/.98 Georgia, serif
 .card-rocket i { display:block; width:56px; height:43px; border:1px solid var(--cyan); background:rgba(84,214,221,.08); }
 .card-rocket i:nth-child(2){width:43px}.card-rocket i:nth-child(3){width:30px;border-radius:50% 50% 0 0}.card-rocket::after{content:"";position:absolute;bottom:-24px;border:12px solid transparent;border-top:26px solid var(--accent);filter:drop-shadow(0 0 9px var(--accent))}
 .card-body { position:absolute; top:90px; left:50%; width:120px; height:66px; border:1px solid var(--green); background:rgba(139,217,157,.08); transform:translateX(-50%) rotate(-25deg) skewY(9deg); box-shadow:12px 12px 0 rgba(84,214,221,.07); }
+.card-hall { position:absolute; top:62px; left:50%; width:190px; height:118px; transform:translateX(-50%); border:1px solid rgba(84,214,221,.28); border-left:18px solid rgba(255,177,78,.62); background:linear-gradient(90deg,rgba(84,214,221,.04),rgba(84,214,221,.2) 72%,transparent); }
+.card-hall::before,.card-hall::after { content:""; position:absolute; left:12px; right:24px; height:15px; background:#4d6870; }
+.card-hall::before { top:0; }.card-hall::after { bottom:0; }
+.card-hall i { position:absolute; right:22px; top:19px; width:28px; height:78px; border:2px solid var(--cyan); border-radius:50%; transform:rotate(-15deg); }
+.card-hall b { position:absolute; right:28px; top:47px; color:var(--cyan); font:700 12px ui-monospace,monospace; }
+.card-hall em { position:absolute; right:-18px; top:49px; color:var(--accent); font:700 12px ui-monospace,monospace; font-style:normal; }
 .site-footer { color: var(--muted); padding: 26px clamp(18px, 4vw, 64px); border-top: 1px solid var(--line); font-size: .72rem; }
 
 /* Demo pages */
@@ -160,9 +166,10 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .inset-earth-trail.trail-3 { opacity:.16; }
 .qr-card { position:absolute; z-index:4; left:18px; top:18px; width:96px; padding:7px; display:grid; gap:5px; color:var(--muted); background:rgba(5,12,15,.86); border:1px solid var(--line); text-align:center; text-decoration:none; font-size:.57rem; letter-spacing:.04em; }
 .qr-card img { display:block; width:80px; height:80px; background:white; }
-.solar-qr-host { display:flex; justify-content:flex-end; padding:8px 0 2px; }
-.solar-qr-host .qr-card { position:static; flex:0 0 auto; }
+.inline-qr-host { display:flex; justify-content:flex-end; padding:8px 0 2px; }
+.inline-qr-host .qr-card { position:static; flex:0 0 auto; }
 .mission-time { position:absolute; z-index:3; right:18px; top:18px; padding:5px 8px; color:#dce9e8; background:rgba(5,12,15,.78); border:1px solid var(--line); font:600 .72rem ui-monospace,monospace; }
+.solar-oberth-scene .legend { top:58px; }
 .landing-main > .qr-card { position:fixed; left:auto; right:18px; top:auto; bottom:76px; }
 .drag-workspace { min-width:0; min-height:0; display:grid; grid-template-rows:minmax(390px,62%) minmax(230px,38%); overflow:hidden; }
 .drag-scene { min-height:0; border-bottom:1px solid var(--line); }
@@ -194,6 +201,10 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .transfer-sequence li span { margin-top:6px; font-size:.64rem; }
 .transfer-sequence li.active { color:var(--ink); background:#10242b; border-top-color:var(--accent); }
 .transfer-sequence li[data-stage="geo"].active { border-top-color:var(--green); }
+.hall-sequence { grid-template-columns:repeat(6,minmax(122px,1fr)); }
+.hall-sequence li[data-stage="ionization"].active,.hall-sequence li[data-stage="acceleration"].active { border-top-color:var(--accent); }
+.hall-dot { display:inline-grid!important; place-items:center; width:12px; height:12px; margin-right:6px!important; border-radius:50%; vertical-align:middle; }
+.electron-dot { background:var(--cyan); }.neutral-dot { background:#b7c0c4; }.ion-dot { background:var(--accent); }
 .feedback-trigger { position:fixed; z-index:40; right:18px; bottom:18px; padding:11px 15px; color:#071014; background:var(--accent); border-color:var(--accent); box-shadow:0 8px 24px rgba(0,0,0,.35); }
 .feedback-dialog { width:min(520px,calc(100% - 28px)); padding:0; color:var(--ink); background:#0c171c; border:1px solid rgba(84,214,221,.42); border-radius:5px; box-shadow:0 28px 90px rgba(0,0,0,.7); }
 .feedback-dialog::backdrop { background:rgba(2,7,9,.76); backdrop-filter:blur(4px); }

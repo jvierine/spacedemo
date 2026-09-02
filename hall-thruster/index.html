@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Animate electron transport, argon ionization, ion acceleration, and plume neutralization in a Hall-effect thruster.">
+  <title>Hall-effect thruster · Introduction to space mission design</title>
+  <link rel="stylesheet" href="../styles.css?v=20260902-5">
+  <script src="../js/mathjax.js"></script>
+  <script defer src="../js/qr.js?v=20260902-2"></script>
+  <script defer src="../js/feedback.js?v=20260825-4"></script>
+  <script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
+</head>
+<body class="demo-page">
+<header class="site-header"><a class="course-title" href="../"><span>Introduction to space mission design</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
+<main class="demo-shell">
+<aside class="controls">
+  <a class="back" href="../">← All demonstrations</a>
+  <h1>Hall-effect thruster</h1>
+  <p class="lede">Follow one cathode electron into the Hall current, through an argon-ionizing collision, and ultimately to the anode. Then follow the new Ar⁺ ion into a charge-neutral plume.</p>
+  <section class="control-group">
+    <h2>Particle journey</h2>
+    <div class="slider-row"><div class="slider-head"><label for="progress">Sequence</label><output id="progressOutput"></output></div><input id="progress" type="range" min="0" max="1000" step="1" value="0"></div>
+    <div class="button-row"><button id="play" type="button" class="accent">Play</button><button id="reset" type="button">Reset</button></div>
+    <p class="state-note" id="phaseNote"></p>
+  </section>
+  <section class="control-group">
+    <h2>Illustrative operating point</h2>
+    <div class="slider-row"><div class="slider-head"><label for="voltage">Discharge voltage</label><output id="voltageOutput"></output></div><input id="voltage" type="range" min="100" max="500" step="10" value="300"></div>
+    <div class="slider-row"><div class="slider-head"><label for="magneticField">Radial magnetic field</label><output id="magneticFieldOutput"></output></div><input id="magneticField" type="range" min="10" max="40" step="1" value="20"></div>
+    <div class="slider-row"><div class="slider-head"><label for="electronEnergy">Incident electron energy</label><output id="electronEnergyOutput"></output></div><input id="electronEnergy" type="range" min="16" max="60" step="1" value="30"></div>
+    <div class="readouts"><div class="readout"><span>Electron gyrofrequency</span><strong id="gyrofrequency"></strong></div><div class="readout"><span>Electron Larmor radius</span><strong id="larmorRadius"></strong></div><div class="readout"><span>E × B drift</span><strong id="driftSpeed"></strong></div><div class="readout"><span>Ideal Ar⁺ exhaust</span><strong id="ionSpeed"></strong></div><div class="readout"><span>Ideal Ar⁺ Isp</span><strong id="specificImpulse"></strong></div><div class="readout"><span>Electron p before collision</span><strong id="momentumBefore"></strong></div><div class="readout"><span>Electron p after collision</span><strong id="momentumAfter"></strong></div></div>
+  </section>
+  <section class="control-group">
+    <h2>Governing equations</h2>
+    <p class="equation">\(m\dot{\mathbf v}=q(\mathbf E+\mathbf v\times\mathbf B)\)<br>\(\omega_{ce}=\dfrac{eB_r}{m_e},\quad r_L=\dfrac{m_ev_\perp}{eB_r},\quad \mathbf v_{E\times B}=\dfrac{\mathbf E\times\mathbf B}{B^2}\)</p>
+    <p class="equation">\(e^-+\mathrm{Ar}\rightarrow\mathrm{Ar}^++2e^-\)<br>\(E_{ion}=15.7596\ \mathrm{eV}\)</p>
+    <p class="equation">\(\tfrac12m_{Ar}v_i^2=eV_d,\qquad I_{sp}=\dfrac{v_i}{g_0}\)</p>
+    <p class="control-note">The Hall current impedes axial electron transport and permits a strong axial potential drop. The plasma remains approximately quasineutral: Ar⁺ is accelerated by the electric field, not by a large static reservoir of net negative charge. Collisions and anomalous transport let some electrons reach the anode.</p>
+  </section>
+  <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://descanso.jpl.nasa.gov/SciTechBook/series4/Electric_Propulsion_2nd_edition.pdf">Goebel, Katz and Mikellides, <em>Fundamentals of Electric Propulsion</em>, 2nd ed.</a> — JPL textbook; Hall thrusters, hollow cathodes, ionization, electron transport, and plumes.</li><li><a href="https://www.nasa.gov/smallsat-institute/sst-soa/in-space_propulsion/">NASA Small Spacecraft Systems, “In-Space Propulsion”</a> — axial electric field, radial magnetic field, Hall current, ion acceleration, and plume neutralization.</li><li><a href="https://kirkmcd.princeton.edu/examples/thruster.pdf">McDonald, “Electron Trajectories in a Hall Thruster”</a> — Princeton derivation of electron gyromotion and \(E\times B\) drift.</li><li><a href="https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra=argon&amp;units=1">NIST Atomic Spectra Database, Argon</a> — first ionization energy, 15.7596119 eV.</li></ol></section>
+  <div class="inline-qr-host" data-qr-host></div>
+</aside>
+<section class="comparison-workspace hall-workspace">
+  <div class="viewport comparison-scene" id="viewport"><canvas id="thrusterCanvas" aria-label="Animated full axial-radial cutaway of electron and argon particle motion through both sides of an annular Hall-effect thruster channel"></canvas><div class="legend"><span><i class="hall-dot electron-dot"></i>electron e⁻</span><span><i class="hall-dot neutral-dot"></i>neutral Ar</span><span><i class="hall-dot ion-dot"></i>argon ion Ar⁺</span></div><span class="hint">Full axial–radial cutaway · one upper-channel particle path · Hall orbit projected</span></div>
+  <ol class="transfer-sequence hall-sequence" aria-label="Hall-effect thruster sequence"><li data-stage="emission"><strong>1 · Cathode emission</strong><span>electron enters the discharge</span></li><li data-stage="hall"><strong>2 · Hall-current vortex</strong><span>radial B magnetizes the electron</span></li><li data-stage="ionization"><strong>3 · Argon ionization</strong><span>collision creates Ar⁺ + 2e⁻</span></li><li data-stage="anode"><strong>4 · Electron → anode</strong><span>energy loss and cross-field transport</span></li><li data-stage="acceleration"><strong>5 · Ion acceleration</strong><span>axial E accelerates Ar⁺</span></li><li data-stage="neutralization"><strong>6 · Neutralization</strong><span>cathode electrons balance plume charge</span></li></ol>
+</section>
+</main>
+<script type="module" src="./app.js?v=20260902-2"></script>
+</body>
+</html>
