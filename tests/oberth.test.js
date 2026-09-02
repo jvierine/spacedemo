@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AU_KM,
+  EARTH_MU_KM3_S2,
   EARTH_RADIUS_KM,
   GEO_RADIUS_KM,
   earthEscapeDeltaV,
@@ -100,6 +101,23 @@ test('every selected entry-orbit burn produces an apoapsis at GEO', () => {
   for(const burnAngleDeg of [0,30,90,150,180]){
     const transfer=gtoFromEntryScenario({burnAngleDeg});
     assert.ok(Math.abs(transfer.transferConic.apoapsis-GEO_RADIUS_KM)<1e-5);
+  }
+});
+
+test('GTO delta-v components agree with independent Keplerian formulas',()=>{
+  const perigee=EARTH_RADIUS_KM+270,apogee=EARTH_RADIUS_KM+3720;
+  const a=(perigee+apogee)/2,e=(apogee-perigee)/(apogee+perigee),p=a*(1-e**2);
+  for(const burnAngleDeg of [0,30,90,150,180]){
+    const anomaly=burnAngleDeg*Math.PI/180,factor=Math.sqrt(EARTH_MU_KM3_S2/p);
+    const expectedRadial=factor*e*Math.sin(anomaly),expectedTransverse=factor*(1+e*Math.cos(anomaly));
+    const transfer=gtoFromEntryScenario({burnAngleDeg});
+    const expectedTarget=Math.sqrt(EARTH_MU_KM3_S2*(2/transfer.entryState.radius-1/transfer.transferSemiMajorAxis));
+    const expectedDelta=Math.hypot(-expectedRadial,expectedTarget-expectedTransverse);
+    assert.ok(Math.abs(transfer.entryRadialSpeed-expectedRadial)<1e-12);
+    assert.ok(Math.abs(transfer.entryTransverseSpeed-expectedTransverse)<1e-12);
+    assert.ok(Math.abs(transfer.deltaRadialSpeed+expectedRadial)<1e-12);
+    assert.ok(Math.abs(transfer.deltaTransverseSpeed-(expectedTarget-expectedTransverse))<1e-12);
+    assert.ok(Math.abs(transfer.firstDeltaV-expectedDelta)<1e-12);
   }
 });
 

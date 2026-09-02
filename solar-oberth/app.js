@@ -1,4 +1,4 @@
-import {ALPHA_CENTAURI_DISTANCE_LY,AU_KM,LIGHT_YEAR_KM,SUN_MU_KM3_S2,solarOberthScenario,stateOnConic,stateOnEllipse} from '../js/oberth.js?v=20260902-4';
+import {ALPHA_CENTAURI_DISTANCE_LY,AU_KM,LIGHT_YEAR_KM,SUN_MU_KM3_S2,solarOberthScenario,stateOnConic,stateOnEllipse} from '../js/oberth.js?v=20260902-5';
 
 const $=selector=>document.querySelector(selector);
 const parkingAltitude=$('#parkingAltitude'),perihelion=$('#perihelion'),targetSpeed=$('#targetSpeed'),progress=$('#progress'),orbitCanvas=$('#orbitCanvas'),ctx=orbitCanvas.getContext('2d');

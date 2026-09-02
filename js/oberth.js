@@ -202,15 +202,22 @@ export function gtoFromEntryScenario({
   const burnAngle = radians(burnAngleDeg);
   const entryState = stateOnEllipse(EARTH_MU_KM3_S2,entryPerigee,entryApogee,burnAngle);
   const burnDirection = Math.atan2(entryState.position[1],entryState.position[0]);
+  const radialUnit = [Math.cos(burnDirection),Math.sin(burnDirection)];
+  const transverseUnit = [-Math.sin(burnDirection),Math.cos(burnDirection)];
+  const entryRadialSpeed = entryState.velocity[0]*radialUnit[0]+entryState.velocity[1]*radialUnit[1];
+  const entryTransverseSpeed = entryState.velocity[0]*transverseUnit[0]+entryState.velocity[1]*transverseUnit[1];
   const transferSemiMajorAxis = (entryState.radius + GEO_RADIUS_KM) / 2;
   const transferPerigeeSpeed = Math.sqrt(EARTH_MU_KM3_S2 * (2 / entryState.radius - 1 / transferSemiMajorAxis));
-  const targetVelocity = [-Math.sin(burnDirection)*transferPerigeeSpeed,Math.cos(burnDirection)*transferPerigeeSpeed];
-  const deltaVelocity = [targetVelocity[0]-entryState.velocity[0],targetVelocity[1]-entryState.velocity[1]];
+  const deltaRadialSpeed = -entryRadialSpeed;
+  const deltaTransverseSpeed = transferPerigeeSpeed-entryTransverseSpeed;
+  const deltaVelocity = radialUnit.map((component,index)=>component*deltaRadialSpeed+transverseUnit[index]*deltaTransverseSpeed);
+  const targetVelocity = entryState.velocity.map((component,index)=>component+deltaVelocity[index]);
   const transferConic = conicFromState(EARTH_MU_KM3_S2,entryState.position,targetVelocity);
   const transferApogeeSpeed = Math.sqrt(EARTH_MU_KM3_S2 * (2 / GEO_RADIUS_KM - 1 / transferSemiMajorAxis));
   const geoSpeed = Math.sqrt(EARTH_MU_KM3_S2 / GEO_RADIUS_KM);
   return {
-    entryPerigee,entryApogee,burnAngle,burnDirection,entryState,targetVelocity,deltaVelocity,transferConic,
+    entryPerigee,entryApogee,burnAngle,burnDirection,entryState,radialUnit,transverseUnit,
+    entryRadialSpeed,entryTransverseSpeed,deltaRadialSpeed,deltaTransverseSpeed,targetVelocity,deltaVelocity,transferConic,
     transferSemiMajorAxis,transferPerigeeSpeed,transferApogeeSpeed,geoSpeed,
     firstDeltaV:magnitude(deltaVelocity),
     secondDeltaV:geoSpeed-transferApogeeSpeed,

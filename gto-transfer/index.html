@@ -33,14 +33,15 @@
   </section>
   <section class="control-group">
     <h2>Transfer budget</h2>
-    <div class="readouts"><div class="readout"><span>Burn 1 · entry → GTO</span><strong id="firstDv"></strong></div><div class="readout"><span>Burn 2 · GTO → GEO</span><strong id="secondDv"></strong></div><div class="readout"><span>Total Δv</span><strong id="totalDv"></strong></div><div class="readout"><span>GTO coast time</span><strong id="transferTime"></strong></div><div class="readout"><span>Burn altitude</span><strong id="burnAltitude"></strong></div><div class="readout"><span>GTO apoapsis</span><strong id="gtoApogee"></strong></div></div>
+    <div class="readouts"><div class="readout"><span>Burn 1 · vector magnitude</span><strong id="firstDv"></strong></div><div class="readout"><span>Burn 1 · radial ΔvR</span><strong id="firstDvRadial"></strong></div><div class="readout"><span>Burn 1 · tangential ΔvT</span><strong id="firstDvTangential"></strong></div><div class="readout"><span>Burn 2 · GTO → GEO</span><strong id="secondDv"></strong></div><div class="readout"><span>Total Δv</span><strong id="totalDv"></strong></div><div class="readout"><span>GTO coast time</span><strong id="transferTime"></strong></div><div class="readout"><span>Burn altitude</span><strong id="burnAltitude"></strong></div><div class="readout"><span>GTO apoapsis</span><strong id="gtoApogee"></strong></div></div>
   </section>
   <section class="control-group">
     <h2>Equations</h2>
-    <p class="equation">\(v=\sqrt{\mu_E\left(\dfrac{2}{r}-\dfrac{1}{a}\right)}\)</p>
-    <p class="equation">\(a_{GTO}=\dfrac{r_b+r_{GEO}}{2},\qquad \Delta v_1=\lVert\mathbf v_{GTO,p}-\mathbf v_{entry}\rVert\)</p>
+    <p class="equation">\(p_e=a_e(1-e_e^2)\)<br>\(v_{R,e}=\sqrt{\dfrac{\mu_E}{p_e}}e_e\sin\nu\)<br>\(v_{T,e}=\sqrt{\dfrac{\mu_E}{p_e}}(1+e_e\cos\nu)\)</p>
+    <p class="equation">\(a_{GTO}=\dfrac{r_b+r_{GEO}}{2},\qquad v_{GTO,p}=\sqrt{\mu_E\left(\dfrac{2}{r_b}-\dfrac{1}{a_{GTO}}\right)}\)</p>
+    <p class="equation">\(\Delta v_R=-v_{R,e},\qquad \Delta v_T=v_{GTO,p}-v_{T,e}\)<br>\(\Delta\mathbf v_1=\Delta v_R\hat{\mathbf r}+\Delta v_T\hat{\boldsymbol\theta},\qquad \Delta v_1=\sqrt{\Delta v_R^2+\Delta v_T^2}\)</p>
     <p class="equation">\(\Delta v_2=\sqrt{\dfrac{\mu_E}{r_{GEO}}}-v_{GTO,a}\)</p>
-    <p class="control-note">At every selected entry-orbit angle, Burn 1 changes both speed and direction as required to make that point the transfer periapsis and GEO the transfer apoapsis. Burn 2 raises perigee and circularizes. Inclination change and losses are omitted.</p>
+    <p class="control-note">The entry-orbit velocity is calculated from its Keplerian elements in the local radial–transverse frame. Burn 1 cancels its radial component, sets the required tangential GTO periapsis speed, and is then rotated into the plotted Cartesian frame. Burn 2 raises perigee and circularizes. Inclination change and losses are omitted.</p>
   </section>
   <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://large.stanford.edu/courses/2014/ph240/nagaraj1/docs/hohmann.pdf">Hohmann, <em>The Attainability of Heavenly Bodies</em>, NASA TT F-44</a> — NASA’s English translation of the original 1925 transfer treatment.</li><li><a href="https://ocw.mit.edu/courses/16-851-satellite-engineering-fall-2003/9cb42c582321b7bb9279c6b0957fe085_sateng_portfolio.pdf">MIT 16.851, <em>Satellite Engineering</em></a> — engineering derivation and perigee/apogee burn sequence.</li></ol></section>
 </aside>
@@ -49,6 +50,6 @@
   <ol class="transfer-sequence" id="transferSequence" aria-label="Transfer sequence"><li data-stage="entry"><strong>1 · Entry orbit</strong><span>coast to selected point</span></li><li data-stage="burn1"><strong>2 · Burn 1</strong><span>target GEO apoapsis</span></li><li data-stage="gto"><strong>3 · GTO</strong><span>coast to apoapsis</span></li><li data-stage="burn2"><strong>4 · Burn 2</strong><span>raise periapsis</span></li><li data-stage="geo"><strong>5 · Circular GEO</strong><span>final orbit</span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-2"></script>
+<script type="module" src="./app.js?v=20260902-5"></script>
 </body>
 </html>
