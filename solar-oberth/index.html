@@ -41,9 +41,9 @@
     <p class="equation">\(\epsilon=\dfrac{v^2}{2}-\dfrac{\mu_\odot}{r},\qquad \Delta\epsilon=v\,\Delta v+\dfrac{(\Delta v)^2}{2}\)</p>
     <p class="equation">\(v=\sqrt{\mu_\odot\left(\dfrac{2}{r}-\dfrac{1}{a}\right)}\)</p>
     <p class="equation">\(\Delta v_{exit}=\sqrt{v_{\infty,E}^2+\dfrac{2\mu_E}{r_0}}-\sqrt{\dfrac{\mu_E}{r_0}}\)</p>
-    <p class="control-note">Both routes enter exactly the same target hyperbola. The solar burn is tangential at perihelion; direct injection at the 1 AU crossing changes both speed and direction. Burns are instantaneous and the model uses two-body solar gravity.</p>
+    <p class="control-note">Both routes enter exactly the same target hyperbola, but at different Earth orbital phases. The solar burn is tangential at perihelion; direct injection occurs separately, where the outgoing target hyperbola crosses 1 AU. Burns are instantaneous and the model uses two-body solar gravity.</p>
   </section>
-  <section class="variable-key"><h2>Model limits</h2><p class="control-note">Earth departure uses a patched-conic escape from the selected circular parking orbit. The burn orientation is chosen so its asymptote matches the required heliocentric excess vector. Launch from Earth’s surface, planetary flybys, finite burn duration, heat-shield mass, target motion, course corrections, and braking at Alpha Centauri are omitted.</p></section>
+  <section class="variable-key"><h2>Model limits</h2><p class="control-note">Earth departure uses a patched-conic escape from the selected circular parking orbit. Each route is shown at its own optimal Earth orbital phase, with the parking-orbit burn oriented to supply the required heliocentric excess vector. Launch from Earth’s surface, planetary flybys, finite burn duration, heat-shield mass, target motion, course corrections, and braking at Alpha Centauri are omitted.</p></section>
   <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://arxiv.org/abs/1902.04935">Hibberd et al., “Project Lyra: Catching 1I/‘Oumuamua—Mission Opportunities After 2024”</a> — primary mission study using a Jupiter flyby and solar Oberth maneuver.</li><li><a href="https://store.doverpublications.com/products/9780486497044">Bate, Mueller and White, <em>Fundamentals of Astrodynamics</em></a> — textbook derivation from specific orbital energy and the vis-viva equation.</li></ol></section>
 </aside>
 <section class="comparison-workspace">
@@ -51,6 +51,6 @@
   <ol class="transfer-sequence" id="transferSequence" aria-label="Selected maneuver sequence"><li data-step="one"><strong id="stepOneTitle"></strong><span id="stepOneText"></span></li><li data-step="two"><strong id="stepTwoTitle"></strong><span id="stepTwoText"></span></li><li data-step="three"><strong id="stepThreeTitle"></strong><span id="stepThreeText"></span></li><li data-step="four"><strong id="stepFourTitle"></strong><span id="stepFourText"></span></li><li data-step="five"><strong id="stepFiveTitle"></strong><span id="stepFiveText"></span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-2"></script>
+<script type="module" src="./app.js?v=20260902-3"></script>
 </body>
 </html>

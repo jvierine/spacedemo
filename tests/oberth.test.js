@@ -44,6 +44,13 @@ test('direct and solar Oberth routes enter the identical target hyperbola', () =
   assert.ok(Math.abs(result.directState.radius-AU_KM)<1e-5);
 });
 
+test('direct and solar-dive departures occur at different Earth orbital phases',()=>{
+  const result=solarOberthScenario();
+  assert.ok(Math.abs(result.directDepartureTrueLongitude-result.oberthDepartureTrueLongitude)>.1);
+  assert.ok(Math.abs(Math.hypot(...result.oberthDeparturePosition)-AU_KM)<1e-6);
+  assert.ok(Math.abs(Math.hypot(...result.directState.position)-AU_KM)<1e-5);
+});
+
 test('perigee burn from an eccentric parking orbit creates the requested GTO', () => {
   const result = gtoInjectionScenario({ perigeeAltitudeKm: 300, apogeeAltitudeKm: 2000, burnAngleDeg: 0 });
   assert.ok(Math.abs(result.burn.conic.periapsis - (EARTH_RADIUS_KM + 300)) < 1e-6);

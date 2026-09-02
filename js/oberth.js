@@ -109,6 +109,9 @@ export function solarOberthScenario({
   const targetConic = {a:-SUN_MU_KM3_S2/targetVInfinity**2,e:targetEccentricity,p:targetP,omega:0,energy:targetEnergy,periapsis,apoapsis:Infinity};
   const directTrueAnomaly = Math.acos(Math.max(-1,Math.min(1,(targetP/AU_KM-1)/targetEccentricity)));
   const directState = stateOnConic(SUN_MU_KM3_S2,targetP,targetEccentricity,directTrueAnomaly);
+  const oberthDepartureTrueLongitude = Math.PI;
+  const directDepartureTrueLongitude = Math.atan2(directState.position[1],directState.position[0]);
+  const oberthDeparturePosition = [AU_KM*Math.cos(oberthDepartureTrueLongitude),AU_KM*Math.sin(oberthDepartureTrueLongitude)];
   const earthCircularSpeed = Math.sqrt(SUN_MU_KM3_S2 / AU_KM);
   const earthVelocity = [-earthCircularSpeed*Math.sin(directTrueAnomaly),earthCircularSpeed*Math.cos(directTrueAnomaly)];
   const diveAphelionSpeed = magnitude(stateOnEllipse(SUN_MU_KM3_S2, periapsis, apoapsis, Math.PI).velocity);
@@ -124,6 +127,7 @@ export function solarOberthScenario({
     periapsis, apoapsis, angle, state, burn, optimum, targetEnergy,
     injectionDeltaV, directDeltaV, oberthEarthExitDeltaV,directEarthExitDeltaV,directTotalDeltaV,totalDeltaV,optimumTotalDeltaV,travelYears,earthParkingAltitudeKm,
     targetConic, directState, directTrueAnomaly, earthVelocity,
+    oberthDeparturePosition,oberthDepartureTrueLongitude,directDepartureTrueLongitude,
     penalty: totalDeltaV - optimumTotalDeltaV,
     fluxMultiple: (AU_KM / state.radius) ** 2
   };
