@@ -6,6 +6,7 @@ export const EARTH_MU_KM3_S2 = 398600.4418;
 export const GEO_RADIUS_KM = 42164;
 export const LIGHT_YEAR_KM = 9.4607304725808e12;
 export const ALPHA_CENTAURI_DISTANCE_LY = 4.2465;
+export const JULIAN_YEAR_SECONDS = 365.25 * 86400;
 
 const radians = degrees => degrees * Math.PI / 180;
 export const magnitude = vector => Math.hypot(...vector);
@@ -74,6 +75,26 @@ export function earthEscapeDeltaV(vInfinity,parkingAltitudeKm=300){
   return Math.sqrt(vInfinity**2+2*EARTH_MU_KM3_S2/radius)-Math.sqrt(EARTH_MU_KM3_S2/radius);
 }
 
+export function ellipseTimeFromApoapsis(mu,periapsis,apoapsis,trueAnomaly){
+  const a=(periapsis+apoapsis)/2,e=(apoapsis-periapsis)/(apoapsis+periapsis);
+  const anomaly=Math.max(-Math.PI,Math.min(0,trueAnomaly));
+  const meanMotion=Math.sqrt(mu/a**3);
+  if(anomaly<=-Math.PI)return 0;
+  if(anomaly>=0)return Math.PI/meanMotion;
+  const eccentricAnomaly=2*Math.atan2(Math.sqrt(1-e)*Math.sin(anomaly/2),Math.sqrt(1+e)*Math.cos(anomaly/2));
+  const meanAnomaly=eccentricAnomaly-e*Math.sin(eccentricAnomaly);
+  return (meanAnomaly+Math.PI)/meanMotion;
+}
+
+export function hyperbolaTimeFromPeriapsis(mu,conic,radius){
+  if(!(conic.e>1&&conic.a<0&&radius>=conic.periapsis))throw new RangeError('invalid hyperbolic time of flight');
+  const trueAnomaly=Math.acos(Math.max(-1,Math.min(1,(conic.p/radius-1)/conic.e)));
+  const argument=Math.sqrt((conic.e-1)/(conic.e+1))*Math.tan(trueAnomaly/2);
+  const hyperbolicAnomaly=2*Math.atanh(Math.min(1-Number.EPSILON,Math.max(0,argument)));
+  const meanAnomaly=conic.e*Math.sinh(hyperbolicAnomaly)-hyperbolicAnomaly;
+  return meanAnomaly/Math.sqrt(mu/(-conic.a)**3);
+}
+
 export function sampleConic(conic, count = 300, maximumRadius = Infinity) {
   const hyperbolicLimit = conic.e > 1 ? Math.acos(-1 / conic.e) - 1e-4 : Math.PI;
   const limit = conic.e > 1 ? hyperbolicLimit : Math.PI;
@@ -127,11 +148,16 @@ export function solarOberthScenario({
   const totalDeltaV = oberthEarthExitDeltaV + burn.deltaV;
   const optimumTotalDeltaV = oberthEarthExitDeltaV + optimum.deltaV;
   const directTotalDeltaV=directEarthExitDeltaV;
-  const travelYears = ALPHA_CENTAURI_DISTANCE_LY * LIGHT_YEAR_KM / targetVInfinity / (365.25 * 86400);
+  const alphaDistance=ALPHA_CENTAURI_DISTANCE_LY*LIGHT_YEAR_KM;
+  const diveTimeSeconds=Math.PI*Math.sqrt(((periapsis+apoapsis)/2)**3/SUN_MU_KM3_S2);
+  const oberthTravelYears=(diveTimeSeconds+hyperbolaTimeFromPeriapsis(SUN_MU_KM3_S2,targetConic,alphaDistance))/JULIAN_YEAR_SECONDS;
+  const directTravelYears=hyperbolaTimeFromPeriapsis(SUN_MU_KM3_S2,directConic,alphaDistance)/JULIAN_YEAR_SECONDS;
+  const travelYears = ALPHA_CENTAURI_DISTANCE_LY * LIGHT_YEAR_KM / targetVInfinity / JULIAN_YEAR_SECONDS;
   return {
     periapsis, apoapsis, angle, state, burn, optimum, targetEnergy,
     injectionDeltaV, directDeltaV, oberthEarthExitDeltaV,directEarthExitDeltaV,directTotalDeltaV,totalDeltaV,optimumTotalDeltaV,travelYears,earthParkingAltitudeKm,
     targetConic, directConic, directState, earthVelocity,targetAsymptoteDirection,
+    diveTimeSeconds,oberthTravelYears,directTravelYears,
     oberthDeparturePosition,oberthDepartureTrueLongitude,directDepartureTrueLongitude,
     penalty: totalDeltaV - optimumTotalDeltaV,
     fluxMultiple: (AU_KM / state.radius) ** 2

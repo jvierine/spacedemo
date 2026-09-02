@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Compare a Project Lyra-type solar Oberth departure with a direct burn from Earth's orbit toward Alpha Centauri.">
   <title>Solar Oberth maneuver · Space Systems Engineering</title>
-  <link rel="stylesheet" href="../styles.css?v=20260902-2">
+  <link rel="stylesheet" href="../styles.css?v=20260902-3">
   <script src="../js/mathjax.js"></script>
-  <script defer src="../js/qr.js"></script>
+  <script defer src="../js/qr.js?v=20260902-2"></script>
   <script defer src="../js/feedback.js?v=20260825-4"></script>
   <script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
 </head>
@@ -45,12 +45,13 @@
   </section>
   <section class="variable-key"><h2>Model limits</h2><p class="control-note">Earth departure uses a patched-conic escape from the selected circular parking orbit. Each route is shown at its own Earth orbital phase, with the parking-orbit burn oriented to supply the required heliocentric excess vector. Launch from Earth’s surface, planetary flybys, finite burn duration, heat-shield mass, target motion, course corrections, and braking at Alpha Centauri are omitted.</p></section>
   <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://arxiv.org/abs/1902.04935">Hibberd et al., “Project Lyra: Catching 1I/‘Oumuamua—Mission Opportunities After 2024”</a> — primary mission study using a Jupiter flyby and solar Oberth maneuver.</li><li><a href="https://store.doverpublications.com/products/9780486497044">Bate, Mueller and White, <em>Fundamentals of Astrodynamics</em></a> — textbook derivation from specific orbital energy and the vis-viva equation.</li></ol></section>
+  <div class="solar-qr-host" data-qr-host></div>
 </aside>
 <section class="comparison-workspace">
-  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Animated selected departure route toward Alpha Centauri"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>Earth orbit</span><span id="diveLegend"><i class="swatch" style="background:#90a1a8"></i>solar dive</span><span><i class="swatch" style="background:#ffb14e"></i><span id="targetLegend">solar-Oberth hyperbola</span></span></div><span class="hint">Heliocentric Cartesian view · camera zoom changes, orbit geometry does not</span></div>
+  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Animated selected departure route toward Alpha Centauri"></canvas><output class="mission-time" id="missionTime">t = 0.0000 years</output><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>Earth orbit</span><span id="diveLegend"><i class="swatch" style="background:#90a1a8"></i>solar dive</span><span><i class="swatch" style="background:#ffb14e"></i><span id="targetLegend">solar-Oberth hyperbola</span></span></div><span class="hint">Heliocentric Cartesian view · camera zoom changes, orbit geometry does not</span></div>
   <ol class="transfer-sequence" id="transferSequence" aria-label="Selected maneuver sequence"><li data-step="one"><strong id="stepOneTitle"></strong><span id="stepOneText"></span></li><li data-step="two"><strong id="stepTwoTitle"></strong><span id="stepTwoText"></span></li><li data-step="three"><strong id="stepThreeTitle"></strong><span id="stepThreeText"></span></li><li data-step="four"><strong id="stepFourTitle"></strong><span id="stepFourText"></span></li><li data-step="five"><strong id="stepFiveTitle"></strong><span id="stepFiveText"></span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-5"></script>
+<script type="module" src="./app.js?v=20260902-6"></script>
 </body>
 </html>

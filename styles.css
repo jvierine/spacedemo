@@ -160,6 +160,9 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .inset-earth-trail.trail-3 { opacity:.16; }
 .qr-card { position:absolute; z-index:4; left:18px; top:18px; width:96px; padding:7px; display:grid; gap:5px; color:var(--muted); background:rgba(5,12,15,.86); border:1px solid var(--line); text-align:center; text-decoration:none; font-size:.57rem; letter-spacing:.04em; }
 .qr-card img { display:block; width:80px; height:80px; background:white; }
+.solar-qr-host { display:flex; justify-content:flex-end; padding:8px 0 2px; }
+.solar-qr-host .qr-card { position:static; flex:0 0 auto; }
+.mission-time { position:absolute; z-index:3; right:18px; top:18px; padding:5px 8px; color:#dce9e8; background:rgba(5,12,15,.78); border:1px solid var(--line); font:600 .72rem ui-monospace,monospace; }
 .landing-main > .qr-card { position:fixed; left:auto; right:18px; top:auto; bottom:76px; }
 .drag-workspace { min-width:0; min-height:0; display:grid; grid-template-rows:minmax(390px,62%) minmax(230px,38%); overflow:hidden; }
 .drag-scene { min-height:0; border-bottom:1px solid var(--line); }

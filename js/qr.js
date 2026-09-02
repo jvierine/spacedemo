@@ -9,4 +9,4 @@ panel.setAttribute('aria-label', `Open ${document.title} on a phone`);
 const qrName = slug === 'space' ? 'index' : slug;
 const qrSource = qrName === 'index' ? './qr/index.svg' : `../qr/${qrName}.svg`;
 panel.innerHTML = `<img src="${qrSource}" alt="QR code for ${canonical}"><span>Open on phone</span>`;
-(document.querySelector('.viewport') || document.querySelector('.landing-main') || document.body).append(panel);
+(document.querySelector('[data-qr-host]') || document.querySelector('.viewport') || document.querySelector('.landing-main') || document.body).append(panel);

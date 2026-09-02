@@ -1,14 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  ALPHA_CENTAURI_DISTANCE_LY,
   AU_KM,
   EARTH_MU_KM3_S2,
   EARTH_RADIUS_KM,
   GEO_RADIUS_KM,
+  JULIAN_YEAR_SECONDS,
+  LIGHT_YEAR_KM,
+  SUN_MU_KM3_S2,
   earthEscapeDeltaV,
+  ellipseTimeFromApoapsis,
   gtoFromEntryScenario,
   gtoInjectionScenario,
   gtoTransferScenario,
+  hyperbolaTimeFromPeriapsis,
   solarOberthScenario,
   stateOnEllipse
 } from '../js/oberth.js';
@@ -66,6 +72,17 @@ test('direct departure is prograde at a 1 AU perihelion with the same outgoing a
   assert.ok(Math.abs(cross)<1e-10);
   assert.ok(Math.abs(directAsymptote-result.targetAsymptoteDirection)<1e-12);
   assert.ok(result.directState.velocity[0]*result.earthVelocity[0]+result.directState.velocity[1]*result.earthVelocity[1]>0);
+});
+
+test('Solar Oberth timeline uses elliptic and hyperbolic Kepler time of flight',()=>{
+  const result=solarOberthScenario(),alphaDistance=ALPHA_CENTAURI_DISTANCE_LY*LIGHT_YEAR_KM;
+  const halfPeriod=Math.PI*Math.sqrt(((result.periapsis+AU_KM)/2)**3/SUN_MU_KM3_S2);
+  assert.ok(Math.abs(ellipseTimeFromApoapsis(SUN_MU_KM3_S2,result.periapsis,AU_KM,-Math.PI))<1e-9);
+  assert.ok(Math.abs(ellipseTimeFromApoapsis(SUN_MU_KM3_S2,result.periapsis,AU_KM,0)-halfPeriod)<1e-6);
+  assert.ok(Math.abs(result.diveTimeSeconds-halfPeriod)<1e-9);
+  assert.ok(Math.abs(result.directTravelYears-hyperbolaTimeFromPeriapsis(SUN_MU_KM3_S2,result.directConic,alphaDistance)/JULIAN_YEAR_SECONDS)<1e-9);
+  assert.ok(Math.abs(result.oberthTravelYears-(halfPeriod+hyperbolaTimeFromPeriapsis(SUN_MU_KM3_S2,result.targetConic,alphaDistance))/JULIAN_YEAR_SECONDS)<1e-9);
+  assert.ok(hyperbolaTimeFromPeriapsis(SUN_MU_KM3_S2,result.targetConic,AU_KM)>0);
 });
 
 test('perigee burn from an eccentric parking orbit creates the requested GTO', () => {
