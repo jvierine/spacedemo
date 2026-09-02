@@ -1,7 +1,8 @@
 const $=selector=>document.querySelector(selector);
 const canvas=$('#thrusterCanvas'),ctx=canvas.getContext('2d');
 const colors={electron:'#54d6dd',neutral:'#b7c0c4',ion:'#ffb14e',field:'#ff766d',wall:'#567078',anode:'#d48b43',plume:'#b58cff'};
-let progressValue=0,playing=false,lastFrame=0,lastVisualFrame=0,hallMotionAngle=0;
+const sequenceDurationMs=10000;
+let progressValue=0,playing=false,sequenceStartTime=0,lastVisualFrame=0,hallMotionAngle=0;
 
 function canvasSize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(2,devicePixelRatio||1),width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}return{width,height,ratio}}
 const mix=(a,b,f)=>a+(b-a)*f;
@@ -32,6 +33,7 @@ function drawHallInset(phase,width,height,ratio){
 }
 
 function drawAxialHallMotion(phase,width,height,ratio){
+  if(phase.stage!=='hall')return;
   const cycle=((hallMotionAngle/(2*Math.PI))%1+1)%1,x=.585*width,upper=.36*height,lower=.64*height;
   for(let index=0;index<3;index++){
     const outward=(cycle+index/3)%1,inward=1-outward,outRadius=(4+15*outward)*ratio,inRadius=(4+15*inward)*ratio;
@@ -57,7 +59,7 @@ function draw(){
   for(const y of [.35,.65])arrow(.24*width,y*height,.57*width,y*height,colors.field,'',ratio);label('axial E',[.39,.33],project,ratio,colors.field);
   arrow(.64*width,.43*height,.64*width,.295*height,colors.electron,'+Bᵣ',ratio);arrow(.64*width,.57*height,.64*width,.705*height,colors.electron,'−Bᵣ',ratio);
   drawAxialHallMotion(phase,width,height,ratio);
-  drawHallInset(phase,width,height,ratio);
+  if(phase.stage==='hall')drawHallInset(phase,width,height,ratio);
   [[.26,.34],[.36,.38],[.48,.34],[.26,.63],[.38,.67],[.52,.62]].forEach(p=>particle(p,colors.neutral,'Ar',7,project,ratio));
   if(phase.stage==='emission')particle(phase.position,colors.electron,'−',6,project,ratio);
   if(phase.stage==='ionization'){
@@ -80,6 +82,6 @@ function stageNote(phase){
 }
 function setStage(){const phase=phaseAt(progressValue);const names={emission:'Cathode electron emission',hall:'Bulk E × B Hall drift',ionization:'Electron-impact argon ionization',anode:'Electron transport to anode',acceleration:'Ar⁺ acceleration',neutralization:'Plume neutralization'};$('#progressOutput').textContent=names[phase.stage];$('#phaseNote').textContent=stageNote(phase);document.querySelectorAll('[data-stage]').forEach(item=>item.classList.toggle('active',item.dataset.stage===phase.stage));draw()}
 
-$('#play').addEventListener('click',()=>{if(progressValue>=1)progressValue=0;playing=!playing;$('#play').textContent=playing?'Pause':'Play';lastFrame=performance.now();setStage()});$('#reset').addEventListener('click',()=>{playing=false;$('#play').textContent='Play';progressValue=0;setStage()});new ResizeObserver(draw).observe($('#viewport'));
-function animate(time){const visualElapsed=lastVisualFrame?Math.min(50,time-lastVisualFrame):0;lastVisualFrame=time;hallMotionAngle=(hallMotionAngle+visualElapsed*.0025)%(2*Math.PI);if(playing){const elapsed=Math.min(50,time-lastFrame);lastFrame=time;progressValue+=elapsed*.000075;if(progressValue>=1){progressValue=1;playing=false;$('#play').textContent='Replay'}setStage()}else draw();requestAnimationFrame(animate)}
+$('#play').addEventListener('click',()=>{if(progressValue>=1)progressValue=0;playing=!playing;if(playing)sequenceStartTime=performance.now()-progressValue*sequenceDurationMs;$('#play').textContent=playing?'Pause':'Play';setStage()});$('#reset').addEventListener('click',()=>{playing=false;$('#play').textContent='Play';progressValue=0;setStage()});new ResizeObserver(draw).observe($('#viewport'));
+function animate(time){const visualElapsed=lastVisualFrame?Math.min(50,time-lastVisualFrame):0;lastVisualFrame=time;hallMotionAngle=(hallMotionAngle+visualElapsed*.0025)%(2*Math.PI);if(playing){progressValue=Math.min(1,(time-sequenceStartTime)/sequenceDurationMs);if(progressValue>=1){playing=false;$('#play').textContent='Replay'}setStage()}else draw();requestAnimationFrame(animate)}
 setStage();requestAnimationFrame(animate);
