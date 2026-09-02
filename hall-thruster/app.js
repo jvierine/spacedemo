@@ -1,7 +1,7 @@
 const $=selector=>document.querySelector(selector);
 const canvas=$('#thrusterCanvas'),ctx=canvas.getContext('2d');
 const colors={electron:'#54d6dd',neutral:'#b7c0c4',ion:'#ffb14e',field:'#ff766d',wall:'#567078',anode:'#d48b43',plume:'#b58cff'};
-let progressValue=0,playing=false,lastFrame=0;
+let progressValue=0,playing=false,lastFrame=0,lastVisualFrame=0,hallMotionAngle=0;
 
 function canvasSize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(2,devicePixelRatio||1),width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}return{width,height,ratio}}
 const mix=(a,b,f)=>a+(b-a)*f;
@@ -28,19 +28,17 @@ function drawCircuit(width,height,ratio){
 function drawHallInset(phase,width,height,ratio){
   const cx=.82*width,cy=.69*height,outer=.125*height,inner=.064*height,orbitRadius=(outer+inner)/2;ctx.fillStyle='rgba(5,12,15,.88)';ctx.beginPath();ctx.arc(cx,cy,outer+13*ratio,0,Math.PI*2);ctx.fill();ctx.strokeStyle=colors.wall;ctx.lineWidth=(outer-inner);ctx.beginPath();ctx.arc(cx,cy,(outer+inner)/2,0,Math.PI*2);ctx.stroke();
   ctx.strokeStyle=colors.electron;ctx.lineWidth=1.6*ratio;ctx.beginPath();ctx.arc(cx,cy,orbitRadius,-.35*Math.PI,1.48*Math.PI);ctx.stroke();arrow(cx-.035*width,cy-orbitRadius,cx+.035*width,cy-orbitRadius,colors.electron,'',ratio);
-  const angle=phase.stage==='hall'?phase.hallAngle:-.5*Math.PI,gyroAngle=phase.stage==='hall'?phase.gyroAngle:0,guidingX=cx+orbitRadius*Math.cos(angle),guidingY=cy+orbitRadius*Math.sin(angle),gyroRadius=6*ratio,electronX=guidingX+gyroRadius*Math.cos(gyroAngle),electronY=guidingY+gyroRadius*Math.sin(gyroAngle);ctx.strokeStyle='rgba(84,214,221,.7)';ctx.lineWidth=1*ratio;ctx.beginPath();ctx.arc(guidingX,guidingY,gyroRadius,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#dce9e8';ctx.beginPath();ctx.arc(guidingX,guidingY,1.5*ratio,0,Math.PI*2);ctx.fill();particle([electronX/width,electronY/height],colors.electron,'−',5,([x,y])=>[x*width,y*height],ratio);ctx.fillStyle=colors.electron;ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText('looking downstream',cx-outer,cy+outer+18*ratio);ctx.fillText('bulk E×B drift + small gyromotion',cx-outer,cy+outer+31*ratio);
+  const angle=hallMotionAngle,gyroAngle=hallMotionAngle*10,guidingX=cx+orbitRadius*Math.cos(angle),guidingY=cy+orbitRadius*Math.sin(angle),gyroRadius=6*ratio,electronX=guidingX+gyroRadius*Math.cos(gyroAngle),electronY=guidingY+gyroRadius*Math.sin(gyroAngle);ctx.strokeStyle='rgba(84,214,221,.7)';ctx.lineWidth=1*ratio;ctx.beginPath();ctx.arc(guidingX,guidingY,gyroRadius,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#dce9e8';ctx.beginPath();ctx.arc(guidingX,guidingY,1.5*ratio,0,Math.PI*2);ctx.fill();particle([electronX/width,electronY/height],colors.electron,'−',5,([x,y])=>[x*width,y*height],ratio);ctx.fillStyle=colors.electron;ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText('looking downstream',cx-outer,cy+outer+18*ratio);ctx.fillText('bulk E×B drift + small gyromotion',cx-outer,cy+outer+31*ratio);
 }
 
 function drawAxialHallMotion(phase,width,height,ratio){
-  if(phase.stage!=='hall')return;
-  const cycle=((phase.hallAngle/(2*Math.PI))%1+1)%1,x=.585*width,upper=.36*height,lower=.64*height;
+  const cycle=((hallMotionAngle/(2*Math.PI))%1+1)%1,x=.585*width,upper=.36*height,lower=.64*height;
   for(let index=0;index<3;index++){
     const outward=(cycle+index/3)%1,inward=1-outward,outRadius=(4+15*outward)*ratio,inRadius=(4+15*inward)*ratio;
     ctx.strokeStyle=`rgba(84,214,221,${.75*(1-outward)})`;ctx.lineWidth=1.2*ratio;ctx.beginPath();ctx.arc(x,upper,outRadius,0,Math.PI*2);ctx.stroke();
     ctx.strokeStyle=`rgba(84,214,221,${.75*(1-inward)})`;ctx.beginPath();ctx.arc(x,lower,inRadius,0,Math.PI*2);ctx.stroke();
   }
-  ctx.fillStyle=colors.electron;ctx.beginPath();ctx.arc(x,upper,3.2*ratio,0,Math.PI*2);ctx.fill();ctx.strokeStyle=colors.electron;ctx.lineWidth=1.8*ratio;ctx.beginPath();ctx.arc(x,lower,8*ratio,0,Math.PI*2);ctx.moveTo(x-4*ratio,lower-4*ratio);ctx.lineTo(x+4*ratio,lower+4*ratio);ctx.moveTo(x+4*ratio,lower-4*ratio);ctx.lineTo(x-4*ratio,lower+4*ratio);ctx.stroke();
-  ctx.fillStyle=colors.electron;ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText('bulk E×B: out of page',.49*width,.405*height);ctx.fillText('bulk E×B: into page',.49*width,.685*height);
+  particle([x/width,upper/height],colors.electron,'−',5+2*cycle,([px,py])=>[px*width,py*height],ratio);particle([x/width,lower/height],colors.electron,'−',7-2*cycle,([px,py])=>[px*width,py*height],ratio);ctx.fillStyle=colors.electron;ctx.font=`700 ${13*ratio}px ui-monospace,monospace`;ctx.fillText('⊙',x+12*ratio,upper+5*ratio);ctx.fillText('⊗',x+12*ratio,lower+5*ratio);
 }
 
 function draw(){
@@ -69,7 +67,7 @@ function draw(){
   if(phase.stage==='anode'){particle([.43,.36],colors.ion,'+',9,project,ratio);particle(phase.position,colors.electron,'−',4.5,project,ratio);ctx.strokeStyle=colors.electron;ctx.globalAlpha=.45;ctx.beginPath();for(let i=0;i<=50;i++){const f=i/50,p=[mix(.43,.205,f),.36+.028*Math.sin(f*Math.PI*6)*(1-f)],[x,y]=project(p);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();ctx.globalAlpha=1}
   if(phase.stage==='acceleration'){particle([.205,.36],colors.electron,'−',4.5,project,ratio);particle(phase.ionPosition,colors.ion,'+',9,project,ratio);arrow(.66*width,.40*height,.90*width,.40*height,colors.ion,'Ar⁺ acceleration',ratio)}
   if(phase.stage==='neutralization'){particle(phase.ionPosition,colors.ion,'+',9,project,ratio);particle(phase.electronPosition,colors.electron,'−',5,project,ratio);if(phase.f>.82)label('charge-neutral plume: Ar⁺ + e⁻',[.77,.44],project,ratio,colors.plume)}
-  label('outward radial B on both sides of centerline',[.40,.92],project,ratio,colors.electron);label('Ar⁺ ion beam →',[.84,.31],project,ratio,colors.ion);label('purple glow: excited Ar / Ar⁺',[.72,.80],project,ratio,colors.plume);
+  label('outward radial B on both sides of centerline',[.40,.92],project,ratio,colors.electron);label('Ar⁺ ion beam →',[.84,.31],project,ratio,colors.ion);label('purple glow: excited Ar / Ar⁺',[.72,.94],project,ratio,colors.plume);
 }
 
 function stageNote(phase){
@@ -83,5 +81,5 @@ function stageNote(phase){
 function setStage(){const phase=phaseAt(progressValue);const names={emission:'Cathode electron emission',hall:'Bulk E × B Hall drift',ionization:'Electron-impact argon ionization',anode:'Electron transport to anode',acceleration:'Ar⁺ acceleration',neutralization:'Plume neutralization'};$('#progressOutput').textContent=names[phase.stage];$('#phaseNote').textContent=stageNote(phase);document.querySelectorAll('[data-stage]').forEach(item=>item.classList.toggle('active',item.dataset.stage===phase.stage));draw()}
 
 $('#play').addEventListener('click',()=>{if(progressValue>=1)progressValue=0;playing=!playing;$('#play').textContent=playing?'Pause':'Play';lastFrame=performance.now();setStage()});$('#reset').addEventListener('click',()=>{playing=false;$('#play').textContent='Play';progressValue=0;setStage()});new ResizeObserver(draw).observe($('#viewport'));
-function animate(time){if(playing){const elapsed=Math.min(50,time-lastFrame);lastFrame=time;progressValue+=elapsed*.000075;if(progressValue>=1){progressValue=1;playing=false;$('#play').textContent='Replay'}setStage()}requestAnimationFrame(animate)}
+function animate(time){const visualElapsed=lastVisualFrame?Math.min(50,time-lastVisualFrame):0;lastVisualFrame=time;hallMotionAngle=(hallMotionAngle+visualElapsed*.0025)%(2*Math.PI);if(playing){const elapsed=Math.min(50,time-lastFrame);lastFrame=time;progressValue+=elapsed*.000075;if(progressValue>=1){progressValue=1;playing=false;$('#play').textContent='Replay'}setStage()}else draw();requestAnimationFrame(animate)}
 setStage();requestAnimationFrame(animate);
