@@ -24,7 +24,7 @@ function label(text,position,project,scale,color='#dce9e8'){const [x,y]=project(
 
 function drawCircuit(width,height,ratio){
   ctx.strokeStyle=colors.field;ctx.lineWidth=1.5*ratio;ctx.beginPath();ctx.moveTo(.16*width,.36*height);ctx.lineTo(.09*width,.36*height);ctx.lineTo(.09*width,.105*height);ctx.lineTo(.42*width,.105*height);ctx.moveTo(.55*width,.105*height);ctx.lineTo(.69*width,.105*height);ctx.lineTo(.69*width,.16*height);ctx.lineTo(.745*width,.16*height);ctx.stroke();
-  ctx.fillStyle='rgba(255,118,109,.10)';ctx.fillRect(.42*width,.055*height,.13*width,.10*height);ctx.strokeRect(.42*width,.055*height,.13*width,.10*height);ctx.fillStyle=colors.field;ctx.font=`700 ${11*ratio}px ui-monospace,monospace`;ctx.fillText('+   V_d   −',.445*width,.095*height);ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText('DC discharge supply',.425*width,.135*height);arrow(.31*width,.105*height,.20*width,.105*height,colors.field,'conventional I_d',ratio);
+  ctx.fillStyle='rgba(255,118,109,.10)';ctx.fillRect(.42*width,.055*height,.13*width,.10*height);ctx.strokeRect(.42*width,.055*height,.13*width,.10*height);ctx.fillStyle=colors.field;ctx.font=`700 ${11*ratio}px ui-monospace,monospace`;ctx.fillText('+',.432*width,.095*height);ctx.fillText('−',.532*width,.095*height);ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText('DC discharge supply',.425*width,.135*height);arrow(.31*width,.105*height,.20*width,.105*height,colors.field,'',ratio);
 }
 
 function drawHallInset(phase,width,height,ratio){

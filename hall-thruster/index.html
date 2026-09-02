@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Animate electron transport, argon ionization, ion acceleration, and plume neutralization in a Hall-effect thruster.">
   <title>Hall-effect thruster · Introduction to space mission design</title>
-  <link rel="stylesheet" href="../styles.css?v=20260902-6">
+  <link rel="stylesheet" href="../styles.css?v=20260902-7">
   <script src="../js/mathjax.js"></script>
   <script defer src="../js/qr.js?v=20260902-2"></script>
   <script defer src="../js/feedback.js?v=20260825-4"></script>
@@ -33,10 +33,10 @@
   <div class="inline-qr-host" data-qr-host></div>
 </aside>
 <section class="comparison-workspace hall-workspace">
-  <div class="viewport comparison-scene" id="viewport"><canvas id="thrusterCanvas" aria-label="Synchronized axial-radial cutaway and face-on view of bulk electron Hall drift in an annular Hall-effect thruster"></canvas><div class="legend"><span><i class="hall-dot electron-dot"></i>electron e⁻</span><span><i class="hall-dot neutral-dot"></i>neutral Ar</span><span><i class="hall-dot ion-dot"></i>argon ion Ar⁺</span></div><span class="hint">Synchronized views · ⊙ out of axial-cutout page · ⊗ into page</span></div>
+  <div class="viewport comparison-scene" id="viewport"><canvas id="thrusterCanvas" aria-label="Synchronized axial-radial cutaway and face-on view of bulk electron Hall drift in an annular Hall-effect thruster"></canvas><span class="hall-circuit-symbol hall-voltage">\(V_d\)</span><span class="hall-circuit-symbol hall-current">\(I_d\)</span><div class="legend"><span><i class="hall-dot electron-dot"></i>electron e⁻</span><span><i class="hall-dot neutral-dot"></i>neutral Ar</span><span><i class="hall-dot ion-dot"></i>argon ion Ar⁺</span></div><span class="hint">Synchronized views · ⊙ out of axial-cutout page · ⊗ into page</span></div>
   <ol class="transfer-sequence hall-sequence" aria-label="Hall-effect thruster sequence"><li data-stage="emission" tabindex="0" role="button"><strong>1 · Cathode emission</strong><span>electron enters the discharge</span></li><li data-stage="hall" tabindex="0" role="button"><strong>2 · Bulk E × B drift</strong><span>guiding center circles the annulus</span></li><li data-stage="ionization" tabindex="0" role="button"><strong>3 · Argon ionization</strong><span>collision creates Ar⁺ + 2e⁻</span></li><li data-stage="anode" tabindex="0" role="button"><strong>4 · Electron → anode</strong><span>energy loss and cross-field transport</span></li><li data-stage="acceleration" tabindex="0" role="button"><strong>5 · Ion acceleration</strong><span>axial E accelerates Ar⁺</span></li><li data-stage="neutralization" tabindex="0" role="button"><strong>6 · Neutralization</strong><span>cathode electrons balance plume charge</span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-8"></script>
+<script type="module" src="./app.js?v=20260902-9"></script>
 </body>
 </html>

@@ -207,6 +207,9 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .hall-sequence li[data-stage="ionization"].active,.hall-sequence li[data-stage="acceleration"].active { border-top-color:var(--accent); }
 .hall-dot { display:inline-grid!important; place-items:center; width:12px; height:12px; margin-right:6px!important; border-radius:50%; vertical-align:middle; }
 .electron-dot { background:var(--cyan); }.neutral-dot { background:#b7c0c4; }.ion-dot { background:var(--accent); }
+.hall-circuit-symbol { position:absolute; z-index:3; color:#ff766d; pointer-events:none; font-size:.76rem; }
+.hall-voltage { left:47.2%; top:6.5%; }
+.hall-current { left:25%; top:5.7%; }
 .feedback-trigger { position:fixed; z-index:40; right:18px; bottom:18px; padding:11px 15px; color:#071014; background:var(--accent); border-color:var(--accent); box-shadow:0 8px 24px rgba(0,0,0,.35); }
 .feedback-dialog { width:min(520px,calc(100% - 28px)); padding:0; color:var(--ink); background:#0c171c; border:1px solid rgba(84,214,221,.42); border-radius:5px; box-shadow:0 28px 90px rgba(0,0,0,.7); }
 .feedback-dialog::backdrop { background:rgba(2,7,9,.76); backdrop-filter:blur(4px); }
