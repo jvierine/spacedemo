@@ -22,6 +22,7 @@ export const ionizationEnergyRemaining = energyEv => Math.max(0, energyEv - ARGO
 
 export function hallThrusterState({
   dischargeVoltageV = 300,
+  dischargeCurrentA = 10,
   radialMagneticFieldT = .02,
   electronEnergyEv = 30,
   accelerationLengthM = .03
@@ -31,6 +32,8 @@ export function hallThrusterState({
   const ionSpeedMs = singlyChargedIonSpeed(dischargeVoltageV);
   return {
     dischargeVoltageV,
+    dischargeCurrentA: positive(dischargeCurrentA, 'discharge current'),
+    dischargePowerW: dischargeVoltageV * positive(dischargeCurrentA, 'discharge current'),
     radialMagneticFieldT,
     electronEnergyEv,
     accelerationLengthM,

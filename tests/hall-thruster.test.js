@@ -33,7 +33,8 @@ test('ideal singly charged argon exhaust gains qV kinetic energy',()=>{
 });
 
 test('crossed-field drift responds to electric and magnetic fields',()=>{
-  const state=hallThrusterState({dischargeVoltageV:300,radialMagneticFieldT:.02,accelerationLengthM:.03});
+  const state=hallThrusterState({dischargeVoltageV:300,dischargeCurrentA:10,radialMagneticFieldT:.02,accelerationLengthM:.03});
   assert.equal(state.electricFieldVm,10000);
   assert.equal(state.exbDriftSpeedMs,500000);
+  assert.equal(state.dischargePowerW,3000);
 });
