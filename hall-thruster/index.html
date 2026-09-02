@@ -20,23 +20,15 @@
   <p class="lede">Follow one cathode electron into the Hall current, through an argon-ionizing collision, and ultimately to the anode. Then follow the new Ar⁺ ion into a charge-neutral plume.</p>
   <section class="control-group">
     <h2>Particle journey</h2>
-    <div class="slider-row"><div class="slider-head"><label for="progress">Sequence</label><output id="progressOutput"></output></div><input id="progress" type="range" min="0" max="1000" step="1" value="0"></div>
+    <output id="progressOutput"></output>
     <div class="button-row"><button id="play" type="button" class="accent">Play</button><button id="reset" type="button">Reset</button></div>
     <p class="state-note" id="phaseNote"></p>
-  </section>
-  <section class="control-group">
-    <h2>Illustrative operating point</h2>
-    <div class="slider-row"><div class="slider-head"><label for="voltage">Discharge voltage</label><output id="voltageOutput"></output></div><input id="voltage" type="range" min="100" max="500" step="10" value="300"></div>
-    <div class="slider-row"><div class="slider-head"><label for="dischargeCurrent">Discharge current</label><output id="dischargeCurrentOutput"></output></div><input id="dischargeCurrent" type="range" min="1" max="30" step="1" value="10"></div>
-    <div class="slider-row"><div class="slider-head"><label for="magneticField">Radial magnetic field</label><output id="magneticFieldOutput"></output></div><input id="magneticField" type="range" min="10" max="40" step="1" value="20"></div>
-    <div class="slider-row"><div class="slider-head"><label for="electronEnergy">Incident electron energy</label><output id="electronEnergyOutput"></output></div><input id="electronEnergy" type="range" min="16" max="60" step="1" value="30"></div>
-    <div class="readouts"><div class="readout"><span>Discharge input power</span><strong id="dischargePower"></strong></div><div class="readout"><span>Electron gyrofrequency</span><strong id="gyrofrequency"></strong></div><div class="readout"><span>Electron Larmor radius</span><strong id="larmorRadius"></strong></div><div class="readout"><span>E × B drift</span><strong id="driftSpeed"></strong></div><div class="readout"><span>Ideal Ar⁺ exhaust</span><strong id="ionSpeed"></strong></div><div class="readout"><span>Ideal Ar⁺ Isp</span><strong id="specificImpulse"></strong></div><div class="readout"><span>Electron p before collision</span><strong id="momentumBefore"></strong></div><div class="readout"><span>Electron p after collision</span><strong id="momentumAfter"></strong></div></div>
   </section>
   <section class="control-group">
     <h2>Governing equations</h2>
     <p class="equation">\(V_a-V_c=V_d,\qquad \mathbf E_z=-\nabla_z\phi,\qquad P_d=V_d I_d\)<br>\(\left.\dfrac{\partial\phi}{\partial\theta}\right|_z\approx0\quad\text{(axisymmetric model)}\)</p>
     <p class="equation">\(m\dot{\mathbf v}=q(\mathbf E+\mathbf v\times\mathbf B)\)<br>\(\omega_{ce}=\dfrac{eB_r}{m_e},\quad r_L=\dfrac{m_ev_\perp}{eB_r},\quad \mathbf v_{E\times B}=\dfrac{\mathbf E\times\mathbf B}{B^2}\)</p>
-    <p class="equation">\(e^-+\mathrm{Ar}\rightarrow\mathrm{Ar}^++2e^-\)<br>\(E_{ion}=15.7596\ \mathrm{eV}\)</p>
+    <p class="equation">\(e^-+\mathrm{Ar}\rightarrow\mathrm{Ar}^++2e^-\)</p>
     <p class="equation">\(\tfrac12m_{Ar}v_i^2=eV_d,\qquad I_{sp}=\dfrac{v_i}{g_0}\)</p>
     <p class="control-note">The discharge supply holds the annular anode positive relative to the external cathode. Magnetized electrons have low axial mobility, allowing that applied voltage to produce an axial potential gradient, strongest near the exit. Their tiny gyromotion is superimposed on an azimuthal Hall drift around the annulus; it is not one electron orbit spanning the channel cross-section. The upstream ionization and near-exit acceleration zones overlap. The plasma remains approximately quasineutral.</p>
   </section>
@@ -48,6 +40,6 @@
   <ol class="transfer-sequence hall-sequence" aria-label="Hall-effect thruster sequence"><li data-stage="emission"><strong>1 · Cathode emission</strong><span>electron enters the discharge</span></li><li data-stage="hall"><strong>2 · Bulk E × B drift</strong><span>guiding center circles the annulus</span></li><li data-stage="ionization"><strong>3 · Argon ionization</strong><span>collision creates Ar⁺ + 2e⁻</span></li><li data-stage="anode"><strong>4 · Electron → anode</strong><span>energy loss and cross-field transport</span></li><li data-stage="acceleration"><strong>5 · Ion acceleration</strong><span>axial E accelerates Ar⁺</span></li><li data-stage="neutralization"><strong>6 · Neutralization</strong><span>cathode electrons balance plume charge</span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-3"></script>
+<script type="module" src="./app.js?v=20260902-4"></script>
 </body>
 </html>

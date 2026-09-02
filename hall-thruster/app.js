@@ -1,14 +1,11 @@
-import {ARGON_IONIZATION_ENERGY_EV,hallThrusterState} from '../js/hall-thruster.js?v=20260902-2';
-
 const $=selector=>document.querySelector(selector);
-const canvas=$('#thrusterCanvas'),ctx=canvas.getContext('2d'),progress=$('#progress'),voltage=$('#voltage'),dischargeCurrent=$('#dischargeCurrent'),magneticField=$('#magneticField'),electronEnergy=$('#electronEnergy');
+const canvas=$('#thrusterCanvas'),ctx=canvas.getContext('2d');
 const colors={electron:'#54d6dd',neutral:'#b7c0c4',ion:'#ffb14e',field:'#ff766d',wall:'#567078',anode:'#d48b43',plume:'#7dcad5'};
-let model,playing=false,lastFrame=0;
+let progressValue=0,playing=false,lastFrame=0;
 
 function canvasSize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(2,devicePixelRatio||1),width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}return{width,height,ratio}}
 const mix=(a,b,f)=>a+(b-a)*f;
 const pointOnQuadratic=(a,b,c,t)=>[(1-t)**2*a[0]+2*(1-t)*t*b[0]+t**2*c[0],(1-t)**2*a[1]+2*(1-t)*t*b[1]+t**2*c[1]];
-const formatMomentum=value=>`${value.toExponential(2)} kg·m/s`;
 
 function phaseAt(value){
   if(value<.16){const f=value/.16;return{stage:'emission',f,position:pointOnQuadratic([.78,.16],[.72,.27],[.59,.36],f),afterCollision:false}}
@@ -25,7 +22,7 @@ function label(text,position,project,scale,color='#dce9e8'){const [x,y]=project(
 
 function drawCircuit(width,height,ratio){
   ctx.strokeStyle=colors.field;ctx.lineWidth=1.5*ratio;ctx.beginPath();ctx.moveTo(.16*width,.36*height);ctx.lineTo(.09*width,.36*height);ctx.lineTo(.09*width,.105*height);ctx.lineTo(.42*width,.105*height);ctx.moveTo(.55*width,.105*height);ctx.lineTo(.69*width,.105*height);ctx.lineTo(.69*width,.16*height);ctx.lineTo(.745*width,.16*height);ctx.stroke();
-  ctx.fillStyle='rgba(255,118,109,.10)';ctx.fillRect(.42*width,.055*height,.13*width,.10*height);ctx.strokeRect(.42*width,.055*height,.13*width,.10*height);ctx.fillStyle=colors.field;ctx.font=`700 ${11*ratio}px ui-monospace,monospace`;ctx.fillText(`+  ${voltage.value} V  −`,.435*width,.095*height);ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText(`DC supply · I_d = ${dischargeCurrent.value} A`,.425*width,.135*height);arrow(.31*width,.105*height,.20*width,.105*height,colors.field,'conventional I_d',ratio);
+  ctx.fillStyle='rgba(255,118,109,.10)';ctx.fillRect(.42*width,.055*height,.13*width,.10*height);ctx.strokeRect(.42*width,.055*height,.13*width,.10*height);ctx.fillStyle=colors.field;ctx.font=`700 ${11*ratio}px ui-monospace,monospace`;ctx.fillText('+   V_d   −',.445*width,.095*height);ctx.font=`600 ${9*ratio}px ui-monospace,monospace`;ctx.fillText('DC discharge supply',.425*width,.135*height);arrow(.31*width,.105*height,.20*width,.105*height,colors.field,'conventional I_d',ratio);
 }
 
 function drawHallInset(phase,width,height,ratio){
@@ -39,7 +36,7 @@ function drawAzimuthalPotential(phase,width,height,ratio){
 }
 
 function draw(){
-  const {width,height,ratio}=canvasSize(),project=([x,y])=>[x*width,y*height],phase=phaseAt(Number(progress.value)/1000);ctx.clearRect(0,0,width,height);
+  const {width,height,ratio}=canvasSize(),project=([x,y])=>[x*width,y*height],phase=phaseAt(progressValue);ctx.clearRect(0,0,width,height);
   drawCircuit(width,height,ratio);
   const plume=ctx.createLinearGradient(.65*width,0,.98*width,0);plume.addColorStop(0,'rgba(84,214,221,.20)');plume.addColorStop(1,'rgba(84,214,221,0)');ctx.fillStyle=plume;ctx.beginPath();ctx.moveTo(.65*width,.28*height);ctx.lineTo(.98*width,.18*height);ctx.lineTo(.98*width,.82*height);ctx.lineTo(.65*width,.72*height);ctx.closePath();ctx.fill();
   ctx.fillStyle='rgba(84,214,221,.08)';ctx.beginPath();ctx.ellipse(.64*width,.50*height,.052*width,.25*height,0,0,Math.PI*2);ctx.fill();
@@ -71,14 +68,13 @@ function draw(){
 function stageNote(phase){
   if(phase.stage==='emission')return'An external hollow cathode emits electrons. Some enter the discharge channel; others later neutralize the outgoing ion beam.';
   if(phase.stage==='hall')return'The electron has small gyromotion about a radial field line while its guiding center drifts azimuthally around the full annulus. The face-on inset shows that Hall-current motion; ⊙ and ⊗ show its opposite page directions in the cutaway.';
-  if(phase.stage==='ionization')return`Upstream of the peak electric field, the electron strikes neutral Ar. Removing one electron costs at least ${ARGON_IONIZATION_ENERGY_EV.toFixed(4)} eV, producing Ar⁺ and a second electron. The broad ionization and acceleration zones overlap.`;
-  if(phase.stage==='anode')return`After ionization the tracked electron has ${model.postCollisionEnergyEv.toFixed(2)} eV and less momentum. Collisions and anomalous cross-field transport allow it to move to the positive anode.`;
+  if(phase.stage==='ionization')return'Upstream of the peak electric field, the electron strikes neutral Ar and produces Ar⁺ and a second electron. The broad ionization and acceleration zones overlap.';
+  if(phase.stage==='anode')return'After ionization the tracked electron has less energy and momentum. Collisions and anomalous cross-field transport allow it to move to the positive anode.';
   if(phase.stage==='acceleration')return'The magnetized Hall current sustains the axial potential drop. Heavy Ar⁺ is weakly magnetized and accelerates outward through the electric field.';
   return'Additional cathode electrons accompany the positive ion beam and neutralize its net charge; this does not require immediate recombination into neutral atoms.';
 }
-function setStage(){const phase=phaseAt(Number(progress.value)/1000);const names={emission:'Cathode electron emission',hall:'Bulk E × B Hall drift',ionization:'Electron-impact argon ionization',anode:'Electron transport to anode',acceleration:'Ar⁺ acceleration',neutralization:'Plume neutralization'};$('#progressOutput').textContent=names[phase.stage];$('#phaseNote').textContent=stageNote(phase);document.querySelectorAll('[data-stage]').forEach(item=>item.classList.toggle('active',item.dataset.stage===phase.stage));draw()}
-function updateModel(){model=hallThrusterState({dischargeVoltageV:Number(voltage.value),dischargeCurrentA:Number(dischargeCurrent.value),radialMagneticFieldT:Number(magneticField.value)/1000,electronEnergyEv:Number(electronEnergy.value)});$('#voltageOutput').textContent=`${voltage.value} V`;$('#dischargeCurrentOutput').textContent=`${dischargeCurrent.value} A`;$('#dischargePower').textContent=`${(model.dischargePowerW/1000).toFixed(1)} kW`;$('#magneticFieldOutput').textContent=`${magneticField.value} mT`;$('#electronEnergyOutput').textContent=`${electronEnergy.value} eV`;$('#gyrofrequency').textContent=`${(model.cyclotronFrequencyHz/1e6).toFixed(0)} MHz`;$('#larmorRadius').textContent=`${(model.electronLarmorRadiusM*1000).toFixed(2)} mm`;$('#driftSpeed').textContent=`${(model.exbDriftSpeedMs/1000).toFixed(0)} km/s`;$('#ionSpeed').textContent=`${(model.ionSpeedMs/1000).toFixed(1)} km/s`;$('#specificImpulse').textContent=`${Math.round(model.idealSpecificImpulseS).toLocaleString()} s`;$('#momentumBefore').textContent=formatMomentum(model.electronMomentumBefore);$('#momentumAfter').textContent=formatMomentum(model.electronMomentumAfter);setStage()}
+function setStage(){const phase=phaseAt(progressValue);const names={emission:'Cathode electron emission',hall:'Bulk E × B Hall drift',ionization:'Electron-impact argon ionization',anode:'Electron transport to anode',acceleration:'Ar⁺ acceleration',neutralization:'Plume neutralization'};$('#progressOutput').textContent=names[phase.stage];$('#phaseNote').textContent=stageNote(phase);document.querySelectorAll('[data-stage]').forEach(item=>item.classList.toggle('active',item.dataset.stage===phase.stage));draw()}
 
-[voltage,dischargeCurrent,magneticField,electronEnergy].forEach(input=>input.addEventListener('input',updateModel));progress.addEventListener('input',()=>{playing=false;$('#play').textContent='Play';setStage()});$('#play').addEventListener('click',()=>{if(Number(progress.value)>=1000)progress.value='0';playing=!playing;$('#play').textContent=playing?'Pause':'Play';lastFrame=performance.now()});$('#reset').addEventListener('click',()=>{playing=false;$('#play').textContent='Play';progress.value='0';setStage()});new ResizeObserver(draw).observe($('#viewport'));
-function animate(time){if(playing){const elapsed=Math.min(50,time-lastFrame);lastFrame=time;let value=Number(progress.value)+elapsed*.075;if(value>=1000){value=1000;playing=false;$('#play').textContent='Replay'}progress.value=String(value);setStage()}requestAnimationFrame(animate)}
-updateModel();requestAnimationFrame(animate);
+$('#play').addEventListener('click',()=>{if(progressValue>=1)progressValue=0;playing=!playing;$('#play').textContent=playing?'Pause':'Play';lastFrame=performance.now();setStage()});$('#reset').addEventListener('click',()=>{playing=false;$('#play').textContent='Play';progressValue=0;setStage()});new ResizeObserver(draw).observe($('#viewport'));
+function animate(time){if(playing){const elapsed=Math.min(50,time-lastFrame);lastFrame=time;progressValue+=elapsed*.000075;if(progressValue>=1){progressValue=1;playing=false;$('#play').textContent='Replay'}setStage()}requestAnimationFrame(animate)}
+setStage();requestAnimationFrame(animate);
