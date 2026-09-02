@@ -179,6 +179,12 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .porkchop-panel figcaption span { color:var(--muted); font-size:.62rem; }
 .porkchop-panel canvas { width:100%; flex:1; min-height:140px; cursor:crosshair; }
 .lambert-presets { grid-template-columns:repeat(5,1fr); margin-top:8px; }
+.comparison-workspace { min-width:0; min-height:0; display:grid; grid-template-rows:minmax(350px,68%) minmax(210px,32%); overflow:hidden; }
+.comparison-scene { min-height:0; border-bottom:1px solid var(--line); }
+.efficiency-panel { min-width:0; min-height:0; margin:0; padding:10px 14px 8px; display:flex; flex-direction:column; background:#081318; }
+.efficiency-panel figcaption { display:flex; justify-content:space-between; gap:18px; color:var(--ink); font-size:.68rem; }
+.efficiency-panel figcaption span { color:var(--muted); font-size:.62rem; }
+.efficiency-panel canvas { width:100%; flex:1; min-height:140px; }
 .feedback-trigger { position:fixed; z-index:40; right:18px; bottom:18px; padding:11px 15px; color:#071014; background:var(--accent); border-color:var(--accent); box-shadow:0 8px 24px rgba(0,0,0,.35); }
 .feedback-dialog { width:min(520px,calc(100% - 28px)); padding:0; color:var(--ink); background:#0c171c; border:1px solid rgba(84,214,221,.42); border-radius:5px; box-shadow:0 28px 90px rgba(0,0,0,.7); }
 .feedback-dialog::backdrop { background:rgba(2,7,9,.76); backdrop-filter:blur(4px); }
@@ -207,6 +213,11 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
   .viewport { height: 62vh; min-height: 430px; }
   .drag-workspace { display:block; overflow:visible; }
   .lambert-workspace { display:block; overflow:visible; }
+  .comparison-workspace { display:block; overflow:visible; }
+  .comparison-scene { height:56vh; min-height:390px; }
+  .efficiency-panel { height:280px; }
+  .efficiency-panel figcaption { display:block; }
+  .efficiency-panel figcaption span { display:block; margin-top:3px; }
   .lambert-scene { height:56vh; min-height:390px; }
   .porkchop-panel { height:280px; }
   .porkchop-panel figcaption { display:block; }

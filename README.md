@@ -9,6 +9,8 @@ Interactive WebGL demonstrations of spacecraft systems and orbital mechanics.
 - Orbit-family ground coverage, selectable ground-station access, and repeat ground tracks
 - Lambert problem targeting with a comet-intercept launch window and Earth–Mars Hohmann example
 - Earth–Sun sphere of influence, Hill sphere, and restricted three-body Lagrange points
+- Solar Oberth comparison: Earth-orbit dive, near-Sun burn, and direct Alpha Centauri departure
+- GTO injection comparison for perigee, off-apsis, and deliberately suboptimal apogee burns
 - Multistage rocket mass and delta-v budgets
 - Torque-free intermediate-axis instability (the Dzhanibekov effect)
 - QR codes and responsive phone layouts for classroom use

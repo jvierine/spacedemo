@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Compare a Project Lyra-type solar Oberth departure with a direct burn from Earth's orbit toward Alpha Centauri.">
+  <title>Solar Oberth maneuver · Space Systems Engineering</title>
+  <link rel="stylesheet" href="../styles.css?v=20260902-1">
+  <script src="../js/mathjax.js"></script>
+  <script defer src="../js/qr.js"></script>
+  <script defer src="../js/feedback.js?v=20260825-4"></script>
+  <script type="module" src="../js/resizable-panel.js?v=20260825-6"></script>
+</head>
+<body class="demo-page">
+<header class="site-header"><a class="course-title" href="../"><span>Space Systems Engineering</span><small>Juha Vierinen</small></a><nav class="top-actions"><a class="top-link" href="../">Index</a><a class="top-link" href="https://github.com/jvierine/spacedemo">GitHub</a></nav></header>
+<main class="demo-shell">
+<aside class="controls" id="controls">
+  <a class="back" href="../">← All demonstrations</a>
+  <h1>Solar Oberth maneuver</h1>
+  <p class="lede">Compare a direct prograde burn from Earth’s heliocentric orbit with a Project Lyra-type detour: brake at 1 AU, dive close to the Sun, and accelerate where the spacecraft is fastest.</p>
+  <section class="control-group">
+    <h2>Mission</h2>
+    <div class="slider-row"><div class="slider-head"><label for="perihelion">Dive perihelion</label><output id="perihelionOutput"></output></div><input id="perihelion" type="range" min="3" max="20" step="0.5" value="3"></div>
+    <div class="slider-row"><div class="slider-head"><label for="targetSpeed">Solar-system excess speed</label><output id="targetSpeedOutput"></output></div><input id="targetSpeed" type="range" min="30" max="300" step="1" value="100"></div>
+    <p class="control-note">The excess speed \(v_\infty\) is the asymptotic cruise speed after escaping the Sun, not the speed at the burn.</p>
+  </section>
+  <section class="control-group">
+    <h2>Oberth burn location</h2>
+    <div class="slider-row"><div class="slider-head"><label for="burnAngle">Angle from perihelion</label><output id="burnAngleOutput"></output></div><input id="burnAngle" type="range" min="0" max="180" step="1" value="0"></div>
+    <div class="preset-row"><button type="button" data-angle="0" class="accent">Perihelion</button><button type="button" data-angle="90">90°</button><button type="button" data-angle="180">Earth / aphelion</button></div>
+    <p class="state-note" id="burnNote"></p>
+  </section>
+  <section class="control-group">
+    <h2>Δv comparison</h2>
+    <div class="readouts"><div class="readout"><span>Earth → dive</span><strong id="injectionDv"></strong></div><div class="readout"><span>Selected Oberth burn</span><strong id="oberthDv"></strong></div><div class="readout"><span>Two-burn total</span><strong id="totalDv"></strong></div><div class="readout"><span>Direct at Earth</span><strong id="directDv"></strong></div><div class="readout"><span>Saving vs direct</span><strong id="saving"></strong></div><div class="readout"><span>Ideal cruise time</span><strong id="travelTime"></strong></div></div>
+  </section>
+  <section class="control-group">
+    <h2>Why perihelion?</h2>
+    <p class="equation">\(\epsilon=\dfrac{v^2}{2}-\dfrac{\mu_\odot}{r},\qquad \Delta\epsilon=v\,\Delta v+\dfrac{(\Delta v)^2}{2}\)</p>
+    <p class="equation">\(v=\sqrt{\mu_\odot\left(\dfrac{2}{r}-\dfrac{1}{a}\right)}\)</p>
+    <p class="control-note">For the same energy gain, a prograde impulse needs less Δv when the initial speed \(v\) is high. The model uses instantaneous, tangential burns and two-body solar gravity.</p>
+  </section>
+  <section class="variable-key"><h2>Model limits</h2><p class="control-note">Earth’s gravity, launch from Earth’s surface, planetary flybys, finite burn duration, heat-shield mass, target motion, course corrections, and braking at Alpha Centauri are omitted. Cruise time is distance divided by \(v_\infty\).</p></section>
+  <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://arxiv.org/abs/1902.04935">Hibberd et al., “Project Lyra: Catching 1I/‘Oumuamua—Mission Opportunities After 2024”</a> — primary mission study using a Jupiter flyby and solar Oberth maneuver.</li><li><a href="https://store.doverpublications.com/products/9780486497044">Bate, Mueller and White, <em>Fundamentals of Astrodynamics</em></a> — textbook derivation from specific orbital energy and the vis-viva equation.</li></ol></section>
+</aside>
+<section class="comparison-workspace">
+  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Solar dive orbit and post-burn escape trajectory"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>Earth orbit</span><span><i class="swatch" style="background:#90a1a8"></i>dive ellipse</span><span><i class="swatch" style="background:#ffb14e"></i>post-burn escape</span></div><span class="hint">Heliocentric view · radial distance is logarithmically compressed</span></div>
+  <figure class="efficiency-panel" id="chartPanel"><figcaption><strong>Total Δv versus burn location</strong><span>Same \(v_\infty\); Earth-to-dive injection included</span></figcaption><canvas id="chartCanvas" aria-label="Solar Oberth delta-v comparison chart"></canvas></figure>
+</section>
+</main>
+<script type="module" src="./app.js?v=20260902-1"></script>
+</body>
+</html>

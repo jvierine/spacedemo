@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Interactive space systems engineering demonstrations." />
     <title>Space Systems Engineering · Demonstrations</title>
-    <link rel="stylesheet" href="./styles.css?v=20260901-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260902-1" />
     <script defer src="./js/qr.js"></script>
     <script defer src="./js/feedback.js?v=20260825-4"></script>
     <script>
@@ -29,6 +29,22 @@
       <h1>Demonstrations</h1>
       <p class="intro">Move the parameters and see the systems respond. Three-dimensional views can be rotated, panned, and zoomed.</p>
       <section class="demo-grid" aria-label="Available demonstrations">
+        <a class="demo-card" href="./solar-oberth/">
+          <span class="demo-number">10 · New</span>
+          <div class="card-orbit orbit-two" aria-hidden="true"></div>
+          <h2>Solar Oberth maneuver</h2>
+          <p>Compare a near-Sun Project Lyra-type burn with direct departure toward Alpha Centauri.</p>
+          <div class="formula">\(\Delta\epsilon=v\Delta v+\tfrac12\Delta v^2\)</div>
+          <span class="open-label">Open →</span>
+        </a>
+        <a class="demo-card" href="./gto-transfer/">
+          <span class="demo-number">09 · New</span>
+          <div class="card-orbit orbit-one" aria-hidden="true"></div>
+          <h2>GTO injection</h2>
+          <p>Compare perigee and apogee burns for the same transfer-orbit energy.</p>
+          <div class="formula">\(a_{GTO}=\tfrac12(r_p+r_{GEO})\)</div>
+          <span class="open-label">Open →</span>
+        </a>
         <a class="demo-card" href="./lagrange/">
           <span class="demo-number">08 · New</span>
           <div class="card-orbit orbit-three" aria-hidden="true"></div>
