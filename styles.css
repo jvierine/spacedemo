@@ -185,6 +185,12 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .efficiency-panel figcaption { display:flex; justify-content:space-between; gap:18px; color:var(--ink); font-size:.68rem; }
 .efficiency-panel figcaption span { color:var(--muted); font-size:.62rem; }
 .efficiency-panel canvas { width:100%; flex:1; min-height:140px; }
+.transfer-sequence { min-width:0; min-height:210px; margin:0; padding:18px; display:grid; grid-template-columns:repeat(5,minmax(128px,1fr)); gap:1px; overflow-x:auto; list-style:none; background:var(--line); }
+.transfer-sequence li { padding:18px 14px; display:flex; flex-direction:column; justify-content:center; color:var(--muted); background:#081318; border-top:3px solid transparent; transition:background .15s,border-color .15s; }
+.transfer-sequence li strong { color:var(--ink); font:650 .72rem/1.35 ui-monospace,monospace; }
+.transfer-sequence li span { margin-top:6px; font-size:.64rem; }
+.transfer-sequence li.active { color:var(--ink); background:#10242b; border-top-color:var(--accent); }
+.transfer-sequence li[data-stage="geo"].active { border-top-color:var(--green); }
 .feedback-trigger { position:fixed; z-index:40; right:18px; bottom:18px; padding:11px 15px; color:#071014; background:var(--accent); border-color:var(--accent); box-shadow:0 8px 24px rgba(0,0,0,.35); }
 .feedback-dialog { width:min(520px,calc(100% - 28px)); padding:0; color:var(--ink); background:#0c171c; border:1px solid rgba(84,214,221,.42); border-radius:5px; box-shadow:0 28px 90px rgba(0,0,0,.7); }
 .feedback-dialog::backdrop { background:rgba(2,7,9,.76); backdrop-filter:blur(4px); }
@@ -218,6 +224,7 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
   .efficiency-panel { height:280px; }
   .efficiency-panel figcaption { display:block; }
   .efficiency-panel figcaption span { display:block; margin-top:3px; }
+  .transfer-sequence { min-height:180px; }
   .lambert-scene { height:56vh; min-height:390px; }
   .porkchop-panel { height:280px; }
   .porkchop-panel figcaption { display:block; }

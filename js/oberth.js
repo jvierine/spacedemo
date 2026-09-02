@@ -24,6 +24,15 @@ export function stateOnEllipse(mu, periapsis, apoapsis, trueAnomaly) {
   };
 }
 
+export function stateOnConic(mu, p, e, trueAnomaly, omega = 0) {
+  const radius = p / (1 + e * Math.cos(trueAnomaly));
+  const factor = Math.sqrt(mu / p);
+  const x = radius * Math.cos(trueAnomaly), y = radius * Math.sin(trueAnomaly);
+  const vx = -factor * Math.sin(trueAnomaly), vy = factor * (e + Math.cos(trueAnomaly));
+  const c = Math.cos(omega), s = Math.sin(omega);
+  return {position:[c*x-s*y,s*x+c*y],velocity:[c*vx-s*vy,s*vx+c*vy],radius};
+}
+
 export function conicFromState(mu, position, velocity) {
   const radius = magnitude(position), speed2 = velocity[0] ** 2 + velocity[1] ** 2;
   const radialDot = position[0] * velocity[0] + position[1] * velocity[1];
@@ -60,6 +69,11 @@ export function progradeBurnToEnergy(mu, state, targetEnergy) {
   };
 }
 
+export function earthEscapeDeltaV(vInfinity,parkingAltitudeKm=300){
+  const radius=EARTH_RADIUS_KM+parkingAltitudeKm;
+  return Math.sqrt(vInfinity**2+2*EARTH_MU_KM3_S2/radius)-Math.sqrt(EARTH_MU_KM3_S2/radius);
+}
+
 export function sampleConic(conic, count = 300, maximumRadius = Infinity) {
   const hyperbolicLimit = conic.e > 1 ? Math.acos(-1 / conic.e) - 1e-4 : Math.PI;
   const limit = conic.e > 1 ? hyperbolicLimit : Math.PI;
@@ -79,6 +93,7 @@ export function sampleConic(conic, count = 300, maximumRadius = Infinity) {
 export function solarOberthScenario({
   perihelionSolarRadii = 3,
   targetVInfinity = 100,
+  earthParkingAltitudeKm = 300,
   burnAngleDeg = 0
 } = {}) {
   const periapsis = perihelionSolarRadii * SUN_RADIUS_KM;
@@ -89,16 +104,26 @@ export function solarOberthScenario({
   const burn = progradeBurnToEnergy(SUN_MU_KM3_S2, state, targetEnergy);
   const perihelionState = stateOnEllipse(SUN_MU_KM3_S2, periapsis, apoapsis, 0);
   const optimum = progradeBurnToEnergy(SUN_MU_KM3_S2, perihelionState, targetEnergy);
+  const targetEccentricity = 1 + periapsis * targetVInfinity ** 2 / SUN_MU_KM3_S2;
+  const targetP = periapsis * (1 + targetEccentricity);
+  const targetConic = {a:-SUN_MU_KM3_S2/targetVInfinity**2,e:targetEccentricity,p:targetP,omega:0,energy:targetEnergy,periapsis,apoapsis:Infinity};
+  const directTrueAnomaly = Math.acos(Math.max(-1,Math.min(1,(targetP/AU_KM-1)/targetEccentricity)));
+  const directState = stateOnConic(SUN_MU_KM3_S2,targetP,targetEccentricity,directTrueAnomaly);
   const earthCircularSpeed = Math.sqrt(SUN_MU_KM3_S2 / AU_KM);
+  const earthVelocity = [-earthCircularSpeed*Math.sin(directTrueAnomaly),earthCircularSpeed*Math.cos(directTrueAnomaly)];
   const diveAphelionSpeed = magnitude(stateOnEllipse(SUN_MU_KM3_S2, periapsis, apoapsis, Math.PI).velocity);
   const injectionDeltaV = earthCircularSpeed - diveAphelionSpeed;
-  const directDeltaV = Math.sqrt(targetVInfinity ** 2 + 2 * SUN_MU_KM3_S2 / AU_KM) - earthCircularSpeed;
-  const totalDeltaV = injectionDeltaV + burn.deltaV;
-  const optimumTotalDeltaV = injectionDeltaV + optimum.deltaV;
+  const directDeltaV = magnitude([directState.velocity[0]-earthVelocity[0],directState.velocity[1]-earthVelocity[1]]);
+  const oberthEarthExitDeltaV=earthEscapeDeltaV(injectionDeltaV,earthParkingAltitudeKm);
+  const directEarthExitDeltaV=earthEscapeDeltaV(directDeltaV,earthParkingAltitudeKm);
+  const totalDeltaV = oberthEarthExitDeltaV + burn.deltaV;
+  const optimumTotalDeltaV = oberthEarthExitDeltaV + optimum.deltaV;
+  const directTotalDeltaV=directEarthExitDeltaV;
   const travelYears = ALPHA_CENTAURI_DISTANCE_LY * LIGHT_YEAR_KM / targetVInfinity / (365.25 * 86400);
   return {
     periapsis, apoapsis, angle, state, burn, optimum, targetEnergy,
-    injectionDeltaV, directDeltaV, totalDeltaV, optimumTotalDeltaV, travelYears,
+    injectionDeltaV, directDeltaV, oberthEarthExitDeltaV,directEarthExitDeltaV,directTotalDeltaV,totalDeltaV,optimumTotalDeltaV,travelYears,earthParkingAltitudeKm,
+    targetConic, directState, directTrueAnomaly, earthVelocity,
     penalty: totalDeltaV - optimumTotalDeltaV,
     fluxMultiple: (AU_KM / state.radius) ** 2
   };
@@ -127,5 +152,60 @@ export function gtoInjectionScenario({
     standardTotalDeltaV: optimum.deltaV + geoSpeed - transferApogeeSpeed,
     penalty: burn.deltaV - optimum.deltaV,
     apogeeError: burn.conic.apoapsis - GEO_RADIUS_KM
+  };
+}
+
+export function gtoTransferScenario({ leoAltitudeKm = 300 } = {}) {
+  const leoRadius = EARTH_RADIUS_KM + leoAltitudeKm;
+  const transferSemiMajorAxis = (leoRadius + GEO_RADIUS_KM) / 2;
+  const leoSpeed = Math.sqrt(EARTH_MU_KM3_S2 / leoRadius);
+  const transferPerigeeSpeed = Math.sqrt(EARTH_MU_KM3_S2 * (2 / leoRadius - 1 / transferSemiMajorAxis));
+  const transferApogeeSpeed = Math.sqrt(EARTH_MU_KM3_S2 * (2 / GEO_RADIUS_KM - 1 / transferSemiMajorAxis));
+  const geoSpeed = Math.sqrt(EARTH_MU_KM3_S2 / GEO_RADIUS_KM);
+  const firstDeltaV = transferPerigeeSpeed - leoSpeed;
+  const secondDeltaV = geoSpeed - transferApogeeSpeed;
+  return {
+    leoAltitudeKm,
+    leoRadius,
+    geoRadius: GEO_RADIUS_KM,
+    transferSemiMajorAxis,
+    transferEccentricity: (GEO_RADIUS_KM - leoRadius) / (GEO_RADIUS_KM + leoRadius),
+    leoSpeed,
+    transferPerigeeSpeed,
+    transferApogeeSpeed,
+    geoSpeed,
+    firstDeltaV,
+    secondDeltaV,
+    totalDeltaV: firstDeltaV + secondDeltaV,
+    transferTimeSeconds: Math.PI * Math.sqrt(transferSemiMajorAxis ** 3 / EARTH_MU_KM3_S2),
+    leoPeriodSeconds: 2 * Math.PI * Math.sqrt(leoRadius ** 3 / EARTH_MU_KM3_S2),
+    geoPeriodSeconds: 2 * Math.PI * Math.sqrt(GEO_RADIUS_KM ** 3 / EARTH_MU_KM3_S2)
+  };
+}
+
+export function gtoFromEntryScenario({
+  perigeeAltitudeKm = 270,
+  apogeeAltitudeKm = 3720,
+  burnAngleDeg = 0
+} = {}) {
+  const entryPerigee = EARTH_RADIUS_KM + perigeeAltitudeKm;
+  const entryApogee = EARTH_RADIUS_KM + Math.max(perigeeAltitudeKm,apogeeAltitudeKm);
+  const burnAngle = radians(burnAngleDeg);
+  const entryState = stateOnEllipse(EARTH_MU_KM3_S2,entryPerigee,entryApogee,burnAngle);
+  const burnDirection = Math.atan2(entryState.position[1],entryState.position[0]);
+  const transferSemiMajorAxis = (entryState.radius + GEO_RADIUS_KM) / 2;
+  const transferPerigeeSpeed = Math.sqrt(EARTH_MU_KM3_S2 * (2 / entryState.radius - 1 / transferSemiMajorAxis));
+  const targetVelocity = [-Math.sin(burnDirection)*transferPerigeeSpeed,Math.cos(burnDirection)*transferPerigeeSpeed];
+  const deltaVelocity = [targetVelocity[0]-entryState.velocity[0],targetVelocity[1]-entryState.velocity[1]];
+  const transferConic = conicFromState(EARTH_MU_KM3_S2,entryState.position,targetVelocity);
+  const transferApogeeSpeed = Math.sqrt(EARTH_MU_KM3_S2 * (2 / GEO_RADIUS_KM - 1 / transferSemiMajorAxis));
+  const geoSpeed = Math.sqrt(EARTH_MU_KM3_S2 / GEO_RADIUS_KM);
+  return {
+    entryPerigee,entryApogee,burnAngle,burnDirection,entryState,targetVelocity,deltaVelocity,transferConic,
+    transferSemiMajorAxis,transferPerigeeSpeed,transferApogeeSpeed,geoSpeed,
+    firstDeltaV:magnitude(deltaVelocity),
+    secondDeltaV:geoSpeed-transferApogeeSpeed,
+    totalDeltaV:magnitude(deltaVelocity)+geoSpeed-transferApogeeSpeed,
+    transferTimeSeconds:Math.PI*Math.sqrt(transferSemiMajorAxis**3/EARTH_MU_KM3_S2)
   };
 }

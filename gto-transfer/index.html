@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Compare perigee and apogee burns for injection into geostationary transfer orbit.">
-  <title>GTO injection · Space Systems Engineering</title>
-  <link rel="stylesheet" href="../styles.css?v=20260902-1">
+  <meta name="description" content="Animate a selected burn from an eccentric Earth entry orbit into a transfer with apoapsis at GEO, then circularize.">
+  <title>GTO transfer · Space Systems Engineering</title>
+  <link rel="stylesheet" href="../styles.css?v=20260902-2">
   <script src="../js/mathjax.js"></script>
   <script defer src="../js/qr.js"></script>
   <script defer src="../js/feedback.js?v=20260825-4"></script>
@@ -16,38 +16,39 @@
 <main class="demo-shell">
 <aside class="controls" id="controls">
   <a class="back" href="../">← All demonstrations</a>
-  <h1>GTO injection</h1>
-  <p class="lede">Give an eccentric Earth parking orbit the energy of a standard geostationary transfer orbit. Compare the efficient perigee burn with a deliberately poor apogee burn.</p>
+  <h1>Entry orbit → GTO → GEO</h1>
+  <p class="lede">Select where to leave the eccentric entry orbit. The first vector burn enters a transfer whose apoapsis is always exactly at GEO; the second burn circularizes there.</p>
   <section class="control-group">
-    <h2>Parking orbit</h2>
-    <div class="slider-row"><div class="slider-head"><label for="perigeeAltitude">Perigee altitude</label><output id="perigeeAltitudeOutput"></output></div><input id="perigeeAltitude" type="range" min="200" max="1000" step="10" value="300"></div>
-    <div class="slider-row"><div class="slider-head"><label for="apogeeAltitude">Apogee altitude</label><output id="apogeeAltitudeOutput"></output></div><input id="apogeeAltitude" type="range" min="300" max="10000" step="50" value="2000"></div>
-    <div class="button-row"><button id="circularPreset" type="button">Circular LEO</button><button id="eccentricPreset" type="button" class="accent">Eccentric example</button></div>
-  </section>
-  <section class="control-group">
-    <h2>Injection burn location</h2>
-    <div class="slider-row"><div class="slider-head"><label for="burnAngle">Angle from perigee</label><output id="burnAngleOutput"></output></div><input id="burnAngle" type="range" min="0" max="180" step="1" value="0"></div>
+    <h2>Initial entry orbit</h2>
+    <div class="slider-row"><div class="slider-head"><label for="perigeeAltitude">Perigee altitude</label><output id="perigeeAltitudeOutput"></output></div><input id="perigeeAltitude" type="range" min="200" max="1000" step="10" value="270"></div>
+    <div class="slider-row"><div class="slider-head"><label for="apogeeAltitude">Apogee altitude</label><output id="apogeeAltitudeOutput"></output></div><input id="apogeeAltitude" type="range" min="1000" max="10000" step="10" value="3720"></div>
+    <div class="slider-row"><div class="slider-head"><label for="burnAngle">Burn location from perigee</label><output id="burnAngleOutput"></output></div><input id="burnAngle" type="range" min="0" max="180" step="1" value="0"></div>
     <div class="preset-row"><button type="button" data-angle="0" class="accent">Perigee</button><button type="button" data-angle="90">90°</button><button type="button" data-angle="180">Apogee</button></div>
-    <p class="state-note" id="burnNote"></p>
   </section>
   <section class="control-group">
-    <h2>Δv and resulting orbit</h2>
-    <div class="readouts"><div class="readout"><span>Selected injection</span><strong id="selectedDv"></strong></div><div class="readout"><span>Perigee injection</span><strong id="perigeeDv"></strong></div><div class="readout"><span>Δv penalty</span><strong id="penalty"></strong></div><div class="readout"><span>GEO circularization</span><strong id="circularizationDv"></strong></div><div class="readout"><span>Result periapsis</span><strong id="resultPerigee"></strong></div><div class="readout"><span>Result apoapsis</span><strong id="resultApogee"></strong></div></div>
+    <h2>Animation</h2>
+    <div class="slider-row"><div class="slider-head"><label for="progress">Transfer progress</label><output id="progressOutput"></output></div><input id="progress" type="range" min="0" max="1000" step="1" value="0"></div>
+    <div class="button-row"><button id="play" type="button" class="accent">Play</button><button id="reset" type="button">Reset</button></div>
+    <p class="state-note" id="phaseNote"></p>
+  </section>
+  <section class="control-group">
+    <h2>Transfer budget</h2>
+    <div class="readouts"><div class="readout"><span>Burn 1 · entry → GTO</span><strong id="firstDv"></strong></div><div class="readout"><span>Burn 2 · GTO → GEO</span><strong id="secondDv"></strong></div><div class="readout"><span>Total Δv</span><strong id="totalDv"></strong></div><div class="readout"><span>GTO coast time</span><strong id="transferTime"></strong></div><div class="readout"><span>Burn altitude</span><strong id="burnAltitude"></strong></div><div class="readout"><span>GTO apoapsis</span><strong id="gtoApogee"></strong></div></div>
   </section>
   <section class="control-group">
     <h2>Equations</h2>
     <p class="equation">\(v=\sqrt{\mu_E\left(\dfrac{2}{r}-\dfrac{1}{a}\right)}\)</p>
-    <p class="equation">\(a_{GTO}=\dfrac{r_p+r_{GEO}}{2},\qquad \Delta v_1=v_{GTO,p}-v_{park,p}\)</p>
+    <p class="equation">\(a_{GTO}=\dfrac{r_b+r_{GEO}}{2},\qquad \Delta v_1=\lVert\mathbf v_{GTO,p}-\mathbf v_{entry}\rVert\)</p>
     <p class="equation">\(\Delta v_2=\sqrt{\dfrac{\mu_E}{r_{GEO}}}-v_{GTO,a}\)</p>
-    <p class="control-note">The off-perigee burn is tangential and is chosen to match standard GTO energy. Except for a circular parking orbit, matching energy alone does not match both GTO apsides.</p>
+    <p class="control-note">At every selected entry-orbit angle, Burn 1 changes both speed and direction as required to make that point the transfer periapsis and GEO the transfer apoapsis. Burn 2 raises perigee and circularizes. Inclination change and losses are omitted.</p>
   </section>
   <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://large.stanford.edu/courses/2014/ph240/nagaraj1/docs/hohmann.pdf">Hohmann, <em>The Attainability of Heavenly Bodies</em>, NASA TT F-44</a> — NASA’s English translation of the original 1925 transfer treatment.</li><li><a href="https://ocw.mit.edu/courses/16-851-satellite-engineering-fall-2003/9cb42c582321b7bb9279c6b0957fe085_sateng_portfolio.pdf">MIT 16.851, <em>Satellite Engineering</em></a> — engineering derivation and perigee/apogee burn sequence.</li></ol></section>
 </aside>
 <section class="comparison-workspace">
-  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Earth parking orbit and orbit after the selected injection burn"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>parking orbit</span><span><i class="swatch" style="background:#ffb14e"></i>selected result</span><span><i class="swatch" style="background:#8bd99d"></i>GEO radius</span></div><span class="hint">Coplanar two-body view · impulses are instantaneous and prograde</span></div>
-  <figure class="efficiency-panel" id="chartPanel"><figcaption><strong>Injection Δv versus burn location</strong><span>Same specific orbital energy as standard GTO</span></figcaption><canvas id="chartCanvas" aria-label="GTO injection delta-v comparison chart"></canvas></figure>
+  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Animated eccentric entry orbit to GTO to circular GEO transfer"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>entry orbit</span><span><i class="swatch" style="background:#ffb14e"></i>selected GTO</span><span><i class="swatch" style="background:#8bd99d"></i>circular GEO</span></div><span class="hint">Coplanar two-body view · animation pauses briefly at each impulsive burn</span></div>
+  <ol class="transfer-sequence" id="transferSequence" aria-label="Transfer sequence"><li data-stage="entry"><strong>1 · Entry orbit</strong><span>coast to selected point</span></li><li data-stage="burn1"><strong>2 · Burn 1</strong><span>target GEO apoapsis</span></li><li data-stage="gto"><strong>3 · GTO</strong><span>coast to apoapsis</span></li><li data-stage="burn2"><strong>4 · Burn 2</strong><span>raise periapsis</span></li><li data-stage="geo"><strong>5 · Circular GEO</strong><span>final orbit</span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-1"></script>
+<script type="module" src="./app.js?v=20260902-2"></script>
 </body>
 </html>
