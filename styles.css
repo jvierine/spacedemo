@@ -202,6 +202,8 @@ button.accent { color: #071014; background: var(--accent); border-color: var(--a
 .transfer-sequence li.active { color:var(--ink); background:#10242b; border-top-color:var(--accent); }
 .transfer-sequence li[data-stage="geo"].active { border-top-color:var(--green); }
 .hall-sequence { grid-template-columns:repeat(6,minmax(122px,1fr)); }
+.hall-sequence li { cursor:pointer; }
+.hall-sequence li:focus-visible { outline:2px solid var(--cyan); outline-offset:-3px; }
 .hall-sequence li[data-stage="ionization"].active,.hall-sequence li[data-stage="acceleration"].active { border-top-color:var(--accent); }
 .hall-dot { display:inline-grid!important; place-items:center; width:12px; height:12px; margin-right:6px!important; border-radius:50%; vertical-align:middle; }
 .electron-dot { background:var(--cyan); }.neutral-dot { background:#b7c0c4; }.ion-dot { background:var(--accent); }

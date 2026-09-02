@@ -2,6 +2,7 @@ const $=selector=>document.querySelector(selector);
 const canvas=$('#thrusterCanvas'),ctx=canvas.getContext('2d');
 const colors={electron:'#54d6dd',neutral:'#b7c0c4',ion:'#ffb14e',field:'#ff766d',wall:'#567078',anode:'#d48b43',plume:'#b58cff'};
 const sequenceDurationMs=10000;
+const stagePositions={emission:.08,hall:.28,ionization:.465,anode:.605,acceleration:.775,neutralization:.935};
 let progressValue=0,playing=false,sequenceStartTime=0,lastVisualFrame=0,hallMotionAngle=0;
 
 function canvasSize(){const rect=canvas.getBoundingClientRect(),ratio=Math.min(2,devicePixelRatio||1),width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}return{width,height,ratio}}
@@ -83,5 +84,6 @@ function stageNote(phase){
 function setStage(){const phase=phaseAt(progressValue);const names={emission:'Cathode electron emission',hall:'Bulk E × B Hall drift',ionization:'Electron-impact argon ionization',anode:'Electron transport to anode',acceleration:'Ar⁺ acceleration',neutralization:'Plume neutralization'};$('#progressOutput').textContent=names[phase.stage];$('#phaseNote').textContent=stageNote(phase);document.querySelectorAll('[data-stage]').forEach(item=>item.classList.toggle('active',item.dataset.stage===phase.stage));draw()}
 
 $('#play').addEventListener('click',()=>{if(progressValue>=1)progressValue=0;playing=!playing;if(playing)sequenceStartTime=performance.now()-progressValue*sequenceDurationMs;$('#play').textContent=playing?'Pause':'Play';setStage()});$('#reset').addEventListener('click',()=>{playing=false;$('#play').textContent='Play';progressValue=0;setStage()});new ResizeObserver(draw).observe($('#viewport'));
+document.querySelectorAll('[data-stage]').forEach(item=>{const selectStage=()=>{playing=false;$('#play').textContent='Play';progressValue=stagePositions[item.dataset.stage];setStage()};item.addEventListener('click',selectStage);item.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStage()}})});
 function animate(time){const visualElapsed=lastVisualFrame?Math.min(50,time-lastVisualFrame):0;lastVisualFrame=time;hallMotionAngle=(hallMotionAngle+visualElapsed*.0025)%(2*Math.PI);if(playing){progressValue=Math.min(1,(time-sequenceStartTime)/sequenceDurationMs);if(progressValue>=1){playing=false;$('#play').textContent='Replay'}setStage()}else draw();requestAnimationFrame(animate)}
 setStage();requestAnimationFrame(animate);
