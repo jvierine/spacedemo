@@ -36,11 +36,15 @@ test('Earth exit burn uses the parking-orbit and hyperbolic excess energies',()=
   assert.ok(Math.abs(deltaV-circular*(Math.sqrt(2)-1))<1e-12);
 });
 
-test('direct and solar Oberth routes enter the identical target hyperbola', () => {
+test('solar Oberth burn enters the constructed near-Sun target hyperbola', () => {
   const result = solarOberthScenario();
   assert.ok(Math.abs(result.burn.conic.energy-result.targetConic.energy)<1e-8);
   assert.ok(Math.abs(result.burn.conic.e-result.targetConic.e)<1e-10);
+  assert.ok(Math.abs(result.burn.conic.p-result.targetConic.p)<1e-5);
+  assert.ok(Math.abs(result.burn.conic.omega-result.targetConic.omega)<1e-12);
   assert.ok(Math.abs(result.burn.conic.periapsis-result.targetConic.periapsis)<1e-5);
+  assert.ok(Math.abs(result.burn.velocity[0])<1e-12);
+  assert.ok(result.burn.velocity[1]>0);
   assert.ok(Math.abs(result.directState.radius-AU_KM)<1e-5);
 });
 
@@ -49,6 +53,18 @@ test('direct and solar-dive departures occur at different Earth orbital phases',
   assert.ok(Math.abs(result.directDepartureTrueLongitude-result.oberthDepartureTrueLongitude)>.1);
   assert.ok(Math.abs(Math.hypot(...result.oberthDeparturePosition)-AU_KM)<1e-6);
   assert.ok(Math.abs(Math.hypot(...result.directState.position)-AU_KM)<1e-5);
+});
+
+test('direct departure is prograde at a 1 AU perihelion with the same outgoing asymptote',()=>{
+  const result=solarOberthScenario();
+  const radialVelocity=result.directState.position[0]*result.directState.velocity[0]+result.directState.position[1]*result.directState.velocity[1];
+  const cross=result.earthVelocity[0]*result.directState.velocity[1]-result.earthVelocity[1]*result.directState.velocity[0];
+  const directAsymptote=result.directConic.omega+Math.acos(-1/result.directConic.e);
+  assert.ok(Math.abs(result.directConic.periapsis-AU_KM)<1e-6);
+  assert.ok(Math.abs(radialVelocity)<1e-3);
+  assert.ok(Math.abs(cross)<1e-10);
+  assert.ok(Math.abs(directAsymptote-result.targetAsymptoteDirection)<1e-12);
+  assert.ok(result.directState.velocity[0]*result.earthVelocity[0]+result.directState.velocity[1]*result.earthVelocity[1]>0);
 });
 
 test('perigee burn from an eccentric parking orbit creates the requested GTO', () => {
@@ -84,6 +100,18 @@ test('every selected entry-orbit burn produces an apoapsis at GEO', () => {
   for(const burnAngleDeg of [0,30,90,150,180]){
     const transfer=gtoFromEntryScenario({burnAngleDeg});
     assert.ok(Math.abs(transfer.transferConic.apoapsis-GEO_RADIUS_KM)<1e-5);
+  }
+});
+
+test('GTO injection vector cancels radial motion and leaves a prograde periapsis',()=>{
+  for(const burnAngleDeg of [0,30,90,150,180]){
+    const transfer=gtoFromEntryScenario({burnAngleDeg}),position=transfer.entryState.position;
+    const postBurnVelocity=transfer.entryState.velocity.map((value,index)=>value+transfer.deltaVelocity[index]);
+    const radialDot=position[0]*postBurnVelocity[0]+position[1]*postBurnVelocity[1];
+    const angularMomentum=position[0]*postBurnVelocity[1]-position[1]*postBurnVelocity[0];
+    assert.ok(Math.abs(radialDot)<1e-6);
+    assert.ok(angularMomentum>0);
+    assert.ok(Math.hypot(postBurnVelocity[0]-transfer.targetVelocity[0],postBurnVelocity[1]-transfer.targetVelocity[1])<1e-12);
   }
 });
 

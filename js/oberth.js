@@ -107,13 +107,18 @@ export function solarOberthScenario({
   const targetEccentricity = 1 + periapsis * targetVInfinity ** 2 / SUN_MU_KM3_S2;
   const targetP = periapsis * (1 + targetEccentricity);
   const targetConic = {a:-SUN_MU_KM3_S2/targetVInfinity**2,e:targetEccentricity,p:targetP,omega:0,energy:targetEnergy,periapsis,apoapsis:Infinity};
-  const directTrueAnomaly = Math.acos(Math.max(-1,Math.min(1,(targetP/AU_KM-1)/targetEccentricity)));
-  const directState = stateOnConic(SUN_MU_KM3_S2,targetP,targetEccentricity,directTrueAnomaly);
+  const targetAsymptoteDirection = Math.acos(-1/targetEccentricity);
+  const directEccentricity = 1 + AU_KM * targetVInfinity ** 2 / SUN_MU_KM3_S2;
+  const directP = AU_KM * (1 + directEccentricity);
+  const directAsymptoteAnomaly = Math.acos(-1/directEccentricity);
+  const directOmega = targetAsymptoteDirection-directAsymptoteAnomaly;
+  const directConic = {a:-SUN_MU_KM3_S2/targetVInfinity**2,e:directEccentricity,p:directP,omega:directOmega,energy:targetEnergy,periapsis:AU_KM,apoapsis:Infinity};
+  const directState = stateOnConic(SUN_MU_KM3_S2,directP,directEccentricity,0,directOmega);
   const oberthDepartureTrueLongitude = Math.PI;
   const directDepartureTrueLongitude = Math.atan2(directState.position[1],directState.position[0]);
   const oberthDeparturePosition = [AU_KM*Math.cos(oberthDepartureTrueLongitude),AU_KM*Math.sin(oberthDepartureTrueLongitude)];
   const earthCircularSpeed = Math.sqrt(SUN_MU_KM3_S2 / AU_KM);
-  const earthVelocity = [-earthCircularSpeed*Math.sin(directTrueAnomaly),earthCircularSpeed*Math.cos(directTrueAnomaly)];
+  const earthVelocity = [-earthCircularSpeed*Math.sin(directDepartureTrueLongitude),earthCircularSpeed*Math.cos(directDepartureTrueLongitude)];
   const diveAphelionSpeed = magnitude(stateOnEllipse(SUN_MU_KM3_S2, periapsis, apoapsis, Math.PI).velocity);
   const injectionDeltaV = earthCircularSpeed - diveAphelionSpeed;
   const directDeltaV = magnitude([directState.velocity[0]-earthVelocity[0],directState.velocity[1]-earthVelocity[1]]);
@@ -126,7 +131,7 @@ export function solarOberthScenario({
   return {
     periapsis, apoapsis, angle, state, burn, optimum, targetEnergy,
     injectionDeltaV, directDeltaV, oberthEarthExitDeltaV,directEarthExitDeltaV,directTotalDeltaV,totalDeltaV,optimumTotalDeltaV,travelYears,earthParkingAltitudeKm,
-    targetConic, directState, directTrueAnomaly, earthVelocity,
+    targetConic, directConic, directState, earthVelocity,targetAsymptoteDirection,
     oberthDeparturePosition,oberthDepartureTrueLongitude,directDepartureTrueLongitude,
     penalty: totalDeltaV - optimumTotalDeltaV,
     fluxMultiple: (AU_KM / state.radius) ** 2

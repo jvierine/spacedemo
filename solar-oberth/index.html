@@ -17,7 +17,7 @@
 <aside class="controls" id="controls">
   <a class="back" href="../">← All demonstrations</a>
   <h1>Solar Oberth maneuver</h1>
-  <p class="lede">Compare a direct vector burn from Earth’s heliocentric orbit with a Project Lyra-type detour: brake at 1 AU, dive close to the Sun, and accelerate where the spacecraft is fastest.</p>
+  <p class="lede">Compare a prograde direct departure at Earth’s best orbital phase with a Project Lyra-type detour: brake at 1 AU, dive close to the Sun, and accelerate where the spacecraft is fastest.</p>
   <section class="control-group">
     <h2>Mission</h2>
     <div class="slider-row"><div class="slider-head"><label for="parkingAltitude">Earth parking orbit</label><output id="parkingAltitudeOutput"></output></div><input id="parkingAltitude" type="range" min="200" max="2000" step="10" value="300"></div>
@@ -41,16 +41,16 @@
     <p class="equation">\(\epsilon=\dfrac{v^2}{2}-\dfrac{\mu_\odot}{r},\qquad \Delta\epsilon=v\,\Delta v+\dfrac{(\Delta v)^2}{2}\)</p>
     <p class="equation">\(v=\sqrt{\mu_\odot\left(\dfrac{2}{r}-\dfrac{1}{a}\right)}\)</p>
     <p class="equation">\(\Delta v_{exit}=\sqrt{v_{\infty,E}^2+\dfrac{2\mu_E}{r_0}}-\sqrt{\dfrac{\mu_E}{r_0}}\)</p>
-    <p class="control-note">Both routes enter exactly the same target hyperbola, but at different Earth orbital phases. The solar burn is tangential at perihelion; direct injection occurs separately, where the outgoing target hyperbola crosses 1 AU. Burns are instantaneous and the model uses two-body solar gravity.</p>
+    <p class="control-note">Both routes have the selected solar-system excess speed and asymptotic direction toward Alpha Centauri, but they follow different hyperbolas. The direct route burns prograde from a 1 AU perihelion at the Earth phase that best aligns its orbital velocity with the required direction. The Oberth route brakes at a different Earth phase, dives toward the Sun, and burns tangentially at perihelion.</p>
   </section>
-  <section class="variable-key"><h2>Model limits</h2><p class="control-note">Earth departure uses a patched-conic escape from the selected circular parking orbit. Each route is shown at its own optimal Earth orbital phase, with the parking-orbit burn oriented to supply the required heliocentric excess vector. Launch from Earth’s surface, planetary flybys, finite burn duration, heat-shield mass, target motion, course corrections, and braking at Alpha Centauri are omitted.</p></section>
+  <section class="variable-key"><h2>Model limits</h2><p class="control-note">Earth departure uses a patched-conic escape from the selected circular parking orbit. Each route is shown at its own Earth orbital phase, with the parking-orbit burn oriented to supply the required heliocentric excess vector. Launch from Earth’s surface, planetary flybys, finite burn duration, heat-shield mass, target motion, course corrections, and braking at Alpha Centauri are omitted.</p></section>
   <section class="variable-key"><h2>References</h2><ol class="reference-list"><li><a href="https://arxiv.org/abs/1902.04935">Hibberd et al., “Project Lyra: Catching 1I/‘Oumuamua—Mission Opportunities After 2024”</a> — primary mission study using a Jupiter flyby and solar Oberth maneuver.</li><li><a href="https://store.doverpublications.com/products/9780486497044">Bate, Mueller and White, <em>Fundamentals of Astrodynamics</em></a> — textbook derivation from specific orbital energy and the vis-viva equation.</li></ol></section>
 </aside>
 <section class="comparison-workspace">
-  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Animated direct and solar Oberth routes to one common hyperbolic orbit"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>Earth orbit</span><span><i class="swatch" style="background:#90a1a8"></i>solar dive</span><span><i class="swatch" style="background:#ffb14e"></i>common target hyperbola</span></div><span class="hint">Heliocentric view · radial distance is logarithmically compressed</span></div>
+  <div class="viewport comparison-scene" id="viewport"><canvas id="orbitCanvas" aria-label="Animated selected departure route toward Alpha Centauri"></canvas><div class="legend"><span><i class="swatch" style="background:#54d6dd"></i>Earth orbit</span><span id="diveLegend"><i class="swatch" style="background:#90a1a8"></i>solar dive</span><span><i class="swatch" style="background:#ffb14e"></i><span id="targetLegend">solar-Oberth hyperbola</span></span></div><span class="hint">Heliocentric Cartesian view · camera zoom changes, orbit geometry does not</span></div>
   <ol class="transfer-sequence" id="transferSequence" aria-label="Selected maneuver sequence"><li data-step="one"><strong id="stepOneTitle"></strong><span id="stepOneText"></span></li><li data-step="two"><strong id="stepTwoTitle"></strong><span id="stepTwoText"></span></li><li data-step="three"><strong id="stepThreeTitle"></strong><span id="stepThreeText"></span></li><li data-step="four"><strong id="stepFourTitle"></strong><span id="stepFourText"></span></li><li data-step="five"><strong id="stepFiveTitle"></strong><span id="stepFiveText"></span></li></ol>
 </section>
 </main>
-<script type="module" src="./app.js?v=20260902-3"></script>
+<script type="module" src="./app.js?v=20260902-4"></script>
 </body>
 </html>
